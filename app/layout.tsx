@@ -16,8 +16,14 @@ export const metadata: Metadata = {
   title: "Noziya Milliy Taomlar - Menyu",
   description: "Zamonaviy restoran ovqat buyurtma tizimi",
   icons: {
-    icon: "/icon-192.png",
-    apple: "/icon-192.png",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-192.png" },
+    ],
+    shortcut: ["/icon-192.png"],
   },
   manifest: "/manifest.json",
   appleWebApp: {
@@ -67,11 +73,11 @@ export default function RootLayout({
           <CartProvider>
             <SmoothScroll>
               <CustomScroll />
-              <PWAInstallPrompt />
               {children}
               <Analytics />
-              <Toaster />
             </SmoothScroll>
+            <PWAInstallPrompt />
+            <Toaster />
           </CartProvider>
         </ThemeProvider>
       </body>
