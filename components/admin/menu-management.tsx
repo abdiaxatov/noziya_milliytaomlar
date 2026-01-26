@@ -150,11 +150,18 @@ export function MenuManagement() {
     }
 
     if (categoryFilter && categoryFilter !== "all") {
-      filtered = filtered.filter((item) => item.categoryId === categoryFilter)
+      const selectedCategory = categories.find(c => c.id === categoryFilter);
+      if (selectedCategory?.isDiscountCategory) {
+        filtered = filtered.filter(
+          (item) => item.discountEndsAt && new Date(item.discountEndsAt) > new Date()
+        );
+      } else {
+        filtered = filtered.filter((item) => item.categoryId === categoryFilter);
+      }
     }
 
     setFilteredItems(filtered)
-  }, [searchQuery, categoryFilter, menuItems])
+  }, [searchQuery, categoryFilter, menuItems, categories])
 
   const handleAddItem = () => {
     setIsCreateDrawerOpen(true)
@@ -331,8 +338,15 @@ export function MenuManagement() {
             ) : filteredItems.length === 0 ? (
               <div className="rounded-xl border-2 border-dashed border-gray-200 p-12 text-center bg-white/50">
                 <UtensilsCrossed className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                <h3 className="text-lg font-medium text-gray-900">Hech narsa topilmadi</h3>
-                <p className="text-gray-500">Qidiruv so'zini o'zgartirib ko'ring yoki yangi taom qo'shing</p>
+                <h3 className="text-lg font-medium text-gray-900">Ushbu kategoriyada taomlar mavjud emas</h3>
+                <p className="text-gray-500 mb-4">Filtrni tozalash uchun quyidagi tugmani bosing</p>
+                <Button
+                  variant="outline"
+                  onClick={() => setCategoryFilter("all")}
+                  className="mt-2"
+                >
+                  Filtrni tozalash
+                </Button>
               </div>
             ) : (
               <>
