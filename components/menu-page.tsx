@@ -372,7 +372,10 @@ export function MenuPage() {
             ) : (
               <NoItems
                 hasItems={menuItems.length > 0}
-                resetSearch={() => setSearchQuery("")}
+                resetSearch={() => {
+                  setSearchQuery("");
+                  setSelectedCategory(null);
+                }}
               />
             )}
           </TabsContent>
