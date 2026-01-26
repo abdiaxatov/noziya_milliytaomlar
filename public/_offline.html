@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline - Cheesesteak.uz</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #fff7ed 0%, #fef2f2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .container {
+        max-width: 400px;
+        width: 100%;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        padding: 2rem;
+        text-align: center;
+        border: 1px solid #fed7aa;
+      }
+      .icon {
+        width: 80px;
+        height: 80px;
+        background: #fed7aa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        animation: pulse 2s infinite;
+      }
+      .icon svg {
+        width: 40px;
+        height: 40px;
+        color: #ea580c;
+      }
+      h1 {
+        font-size: 1.875rem;
+        font-weight: bold;
+        color: #111827;
+        margin-bottom: 0.75rem;
+      }
+      p {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+      .warning {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .warning p {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin: 0;
+      }
+      .button {
+        width: 100%;
+        background: #ea580c;
+        color: white;
+        border: none;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .button:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+      }
+      .footer {
+        margin-top: 1.5rem;
+        font-size: 0.875rem;
+        color: #9ca3af;
+      }
+      .footer p {
+        margin: 0.25rem 0;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M18.364 5.636l-12.728 12.728m0 0L5 21m13.364-15.364L21 5"
+          ></path>
+        </svg>
+      </div>
+      <h1>Internetga ulanmagan</h1>
+      <p>
+        Hozirda internetga ulanmaganingiz sababli ba'zi funksiyalar ishlamaydi.
+        Iltimos, internetga ulanib, qayta urinib ko'ring.
+      </p>
+      <div class="warning">
+        <p>
+          ⚠️ Internet ulanishi yo'q. Tekshirib ko'ring va qayta urinib ko'ring.
+        </p>
+      </div>
+      <button class="button" onclick="window.location.reload()">
+        Qayta yuklash
+      </button>
+      <div class="footer">
+        <p><strong>Cheesesteak.uz</strong></p>
+        <p>Sizning restoran ilovangiz</p>
+        <p>Offline rejimda mavjud</p>
+      </div>
+    </div>
+  </body>
+</html>
