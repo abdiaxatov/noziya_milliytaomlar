@@ -25,8 +25,8 @@ export default function PWAInstallPrompt() {
       e.preventDefault();
       // Stash the event so it can be triggered later
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show the install prompt after a short delay
-      setTimeout(() => setShowPrompt(true), 3000);
+      // Show the install prompt immediately
+      setShowPrompt(true);
     };
 
     const handleAppInstalled = () => {
@@ -56,7 +56,7 @@ export default function PWAInstallPrompt() {
     if (showPrompt && deferredPrompt) {
       toast({
         title: "Ilovani o'rnating",
-        description: "Noziya Milliy Taomlar ni tezroq ochish uchun ilovani o'rnating",
+        description: "Qulayroq foydalanish uchun ilovani o'rnating",
         action: (
           <ToastAction
             altText="O'rnatish"
@@ -77,7 +77,7 @@ export default function PWAInstallPrompt() {
             O'rnatish
           </ToastAction>
         ),
-        duration: 10000, // Show for 10 seconds
+        duration: Infinity, // Do not auto-dismiss
       });
     }
   }, [showPrompt, deferredPrompt, toast]);
