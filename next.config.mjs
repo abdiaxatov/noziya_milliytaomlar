@@ -1,4 +1,4 @@
-import withPWA from "next-pwa";
+import withPWAInit from "@ducanh2912/next-pwa";
 
 let userConfig = undefined;
 try {
@@ -64,47 +64,52 @@ if (userConfig) {
   }
 }
 
-export default withPWA({
+const withPWA = withPWAInit({
   dest: "public",
   register: true,
   skipWaiting: true,
   fallbacks: {
     document: "/offline",
   },
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*/i,
-      handler: "CacheFirst",
-      options: {
-        cacheName: "github-images",
-        expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+  workboxOptions: {
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "github-images",
+          expiration: {
+            maxEntries: 200,
+            maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+          },
         },
       },
-    },
-    {
-      urlPattern: /^https:\/\/firebasestorage\.googleapis\.com\/.*/i,
-      handler: "CacheFirst",
-      options: {
-        cacheName: "firebase-images",
-        expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+      {
+        urlPattern: /^https:\/\/firebasestorage\.googleapis\.com\/.*/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "firebase-images",
+          expiration: {
+            maxEntries: 200,
+            maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+          },
         },
       },
-    },
-    {
-      urlPattern: /^https?.*/,
-      handler: "NetworkFirst",
-      options: {
-        cacheName: "offlineCache",
-        expiration: {
-          maxEntries: 200,
+      {
+        urlPattern: /^https?.*/,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "offlineCache",
+          expiration: {
+            maxEntries: 200,
+          },
         },
       },
-    },
-  ],
-  buildExcludes: [/manifest\.json$/],
+    ],
+    // exclude manifest.json from sw precache
+    exclude: [/manifest\.json$/],
+  },
   disable: false, // Enable PWA in development to test caching
-})(nextConfig);
+});
+
+export default withPWA(nextConfig);
