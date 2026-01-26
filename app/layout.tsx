@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/next";
 import CustomScroll from "@/components/custom-scroll";
 import SmoothScroll from "@/components/smooth-scroll";
 import PWAInstallPrompt from "@/components/pwa-install";
+import AnalyticsTracker from "@/components/analytics-tracker";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -76,6 +77,7 @@ export default function RootLayout({
               {children}
               <Analytics />
             </SmoothScroll>
+            <AnalyticsTracker />
             <PWAInstallPrompt />
             <Toaster />
           </CartProvider>

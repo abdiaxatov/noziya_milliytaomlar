@@ -9,7 +9,8 @@ import {
   ChevronRight,
   LogOut,
   X,
-  MenuIcon
+  MenuIcon,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -113,6 +114,12 @@ export const AdminSidebar = memo(() => {
       href: "/admin/menu",
       icon: <Coffee />,
       title: "Menyu",
+      roles: ["admin"],
+    },
+    {
+      href: "/admin/analytics",
+      icon: <Activity />,
+      title: "Analitika",
       roles: ["admin"],
     },
     // Add more items here as they are uncommented/ready
