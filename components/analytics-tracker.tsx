@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, Suspense } from "react"
 import { rtdb } from "@/lib/firebase"
 import { ref, onValue, push, onDisconnect, set, serverTimestamp, update } from "firebase/database"
 import { usePathname, useSearchParams } from "next/navigation"
