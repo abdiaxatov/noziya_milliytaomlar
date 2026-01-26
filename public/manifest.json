@@ -1,7 +1,7 @@
 {
-  "name": "Cheesesteak.uz - Online Restaurant",
-  "short_name": "Cheesesteak",
-  "description": "Buyurtma berish uchun zamonaviy restoran ilovasi - Order delicious cheesesteaks online",
+  "name": "Noziya Milliy Taomlar - Online Restaurant",
+  "short_name": "Noziya Milliy Taomlar",
+  "description": "Buyurtma berish uchun zamonaviy restoran ilovasi - Order delicious Noziya Milliy Taomlar online",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

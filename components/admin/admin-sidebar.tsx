@@ -178,7 +178,7 @@ export const AdminSidebar = memo(() => {
             {open && (
               <div className="animate-in slide-in-from-left-2 duration-200">
                 <h1 className="font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
-                  cheesesteak
+                  Noziya Milliy Taomlar
                 </h1>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Admin Panel</p>
               </div>

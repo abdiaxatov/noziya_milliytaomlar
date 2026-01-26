@@ -45,7 +45,7 @@ export default function OfflinePage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-3">
-            Cheesesteak.uz - Online Restaurant
+            Noziya Milliy Taomlar - Online Restaurant
           </h1>
           <h2 className="text-xl font-semibold text-orange-600 mb-4">
             You're offline
@@ -80,7 +80,7 @@ export default function OfflinePage() {
           </button>
 
           <div className="text-sm text-gray-500 space-y-2">
-            <p className="font-medium">Cheesesteak.uz - Online Restaurant</p>
+            <p className="font-medium">Noziya Milliy Taomlar - Online Restaurant</p>
             <p>Sizning restoran ilovangiz</p>
             <p className="text-xs">Offline rejimda mavjud</p>
           </div>

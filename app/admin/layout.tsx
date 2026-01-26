@@ -3,7 +3,7 @@ import { AdminLayoutClient } from "@/components/admin/admin-layout-client"
 import { AdminAuthProvider } from "@/components/admin/admin-auth-provider"
 
 export const metadata = {
-  title: "cheesesteak uz - Admin",
+  title: "Noziya Milliy Taomlar - Admin",
   description: "Zamonaviy restoran ovqat buyurtma tizimi",
   icons: {
     icon: "/Logo.png",

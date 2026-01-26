@@ -13,7 +13,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "cheesesteak uz - Menyu",
+  title: "Noziya Milliy Taomlar - Menyu",
   description: "Zamonaviy restoran ovqat buyurtma tizimi",
   icons: {
     icon: "/icon-192.png",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Cheesesteak.uz",
+    title: "Noziya Milliy Taomlar",
   },
   formatDetection: {
     telephone: false,
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "Cheesesteak.uz",
+    "apple-mobile-web-app-title": "Noziya Milliy Taomlar",
   },
 };
 

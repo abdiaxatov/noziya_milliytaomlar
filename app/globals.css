@@ -30,71 +30,84 @@ html.lenis body {
 
 @layer base {
   :root {
-    --background: 45 100% 98%;
-    --foreground: 45 100% 10%;
-    --card: 45 100% 98%;
-    --card-foreground: 45 100% 10%;
-    --popover: 45 100% 98%;
-    --popover-foreground: 45 100% 10%;
+    --background: 217 30% 98%;
+    --foreground: 217 80% 10%;
 
-    /* asosiy sariq rang */
-    --primary: 45 100% 50%; /* #FFBE00 */
+    --card: 0 0% 100%;
+    --card-foreground: 217 80% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 80% 10%;
+
+    --primary: 217 80% 10%;
+    /* #05152e */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 100% 85%;
-    --secondary-foreground: 45 100% 20%;
+    --secondary: 217 20% 96%;
+    --secondary-foreground: 217 80% 10%;
 
-    --muted: 45 40% 90%;
-    --muted-foreground: 45 100% 25%;
+    --muted: 217 20% 96%;
+    --muted-foreground: 217 30% 70%;
 
-    --accent: 45 90% 80%;
-    --accent-foreground: 45 100% 25%;
+    --accent: 217 20% 96%;
+    --accent-foreground: 217 80% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 45 30% 70%;
-    --input: 45 30% 85%;
-    --ring: 45 100% 50%;
-
-    --chart-1: 45 80% 50%;
-    --chart-2: 45 70% 40%;
-    --chart-3: 45 60% 30%;
-    --chart-4: 45 80% 60%;
-    --chart-5: 45 100% 55%;
+    --border: 217 20% 90%;
+    --input: 217 20% 90%;
+    --ring: 217 80% 10%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 45 30% 98%;
-    --sidebar-foreground: 45 100% 20%;
-    --sidebar-primary: 45 100% 50%;
+    --sidebar-background: 217 30% 98%;
+    --sidebar-foreground: 217 80% 10%;
+    --sidebar-primary: 217 80% 10%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 45 40% 90%;
-    --sidebar-accent-foreground: 45 100% 25%;
-    --sidebar-border: 45 30% 70%;
-    --sidebar-ring: 45 100% 50%;
+    --sidebar-accent: 217 20% 96%;
+    --sidebar-accent-foreground: 217 80% 10%;
+    --sidebar-border: 217 20% 90%;
+    --sidebar-ring: 217 80% 10%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 217 80% 10%;
+    --foreground: 217 10% 98%;
+
+    --card: 217 80% 12%;
+    --card-foreground: 217 10% 98%;
+
+    --popover: 217 80% 12%;
+    --popover-foreground: 217 10% 98%;
+
+    --primary: 217 10% 98%;
+    --primary-foreground: 217 80% 10%;
+
+    --secondary: 217 30% 20%;
+    --secondary-foreground: 217 10% 98%;
+
+    --muted: 217 30% 20%;
+    --muted-foreground: 217 20% 64%;
+
+    --accent: 217 30% 20%;
+    --accent-foreground: 217 10% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 25 95% 53%;
+
+    --border: 217 30% 20%;
+    --input: 217 30% 20%;
+    --ring: 217 10% 98%;
+
+    --sidebar-background: 217 80% 8%;
+    --sidebar-foreground: 217 10% 98%;
+    --sidebar-primary: 217 80% 10%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 30% 20%;
+    --sidebar-accent-foreground: 217 10% 98%;
+    --sidebar-border: 217 30% 20%;
+    --sidebar-ring: 217 10% 98%;
   }
 }
 
@@ -102,6 +115,7 @@ html.lenis body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     scroll-behavior: smooth;
@@ -113,6 +127,7 @@ html.lenis body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -123,6 +138,7 @@ html.lenis body {
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -130,10 +146,12 @@ html.lenis body {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -142,12 +160,15 @@ html.lenis body {
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
+
 .animate-slide-up {
   animation: slideUp 0.5s ease-out;
 }
+
 .animate-pulse-slow {
   animation: pulse 2s infinite;
 }
+
 body::-webkit-scrollbar {
   width: 0px;
 }

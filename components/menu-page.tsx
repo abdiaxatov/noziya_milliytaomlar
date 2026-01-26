@@ -209,7 +209,7 @@ export function MenuPage() {
   }, [menuItems, banners]);
 
   const handleExternalLink = (url: string) => window.open(url, "_blank");
-  const handleCall = () => (window.location.href = "tel:+998971557505");
+  const handleCall = () => (window.location.href = "tel:+998950624422");
 
   const hasOrders = (() => {
     try {
@@ -265,8 +265,11 @@ export function MenuPage() {
           {/* Text Content */}
           <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 z-10 text-white animate-in slide-in-from-bottom-4 duration-500 delay-200">
             <h1 className="text-2xl md:text-4xl font-black tracking-wide uppercase drop-shadow-lg leading-none">
-              Cheesesteak
+              Noziya
             </h1>
+            <h3 className="text-lg md:text-2xl font-semibold tracking-wide uppercase drop-shadow-lg">
+              Milliy Taomlar
+            </h3>
             {tableInfo && (
               <div className="mt-2 flex items-center gap-2">
                 <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-primary animate-pulse" />
@@ -282,14 +285,14 @@ export function MenuPage() {
             <Button
               size="icon"
               className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-[#0088cc] hover:bg-[#0077b5] text-white border-0 shadow-lg hover:shadow-[#0088cc]/50 transition-all hover:-translate-y-1"
-              onClick={() => handleExternalLink("https://t.me/cheesesteakuz")}
+              onClick={() => handleExternalLink("https://t.me/@noziyaml")}
             >
               <Send className="w-5 h-5 md:w-6 md:h-6" />
             </Button>
             <Button
               size="icon"
               className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] hover:opacity-90 text-white border-0 shadow-lg hover:shadow-[#dc2743]/50 transition-all hover:-translate-y-1"
-              onClick={() => handleExternalLink("https://www.instagram.com/cheesesteak.uz")}
+              onClick={() => handleExternalLink("https://www.instagram.com/noziya_milliytaomlar")}
             >
               <Instagram className="w-5 h-5 md:w-6 md:h-6" />
             </Button>
@@ -302,7 +305,7 @@ export function MenuPage() {
         <ActionButton
           onClick={() =>
             handleExternalLink(
-              "https://yandex.uz/maps/org/58719852910/?ll=69.244415%2C41.298687&utm_content=link_in_bio&utm_medium=social&utm_source=ig&z=15"
+              "https://www.google.com/maps/place/Noziya+milliy+taomlar/@41.2657624,69.2435861,999m/data=!3m2!1e3!4b1!4m6!3m5!1s0x38ae8b001097b20f:0x5ee4506b740fe4c2!8m2!3d41.2657624!4d69.246161!16s%2Fg%2F11mkzqk0tl?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D"
             )
           }
           icon={<MapPin className="h-5 w-5 text-white" />}
@@ -315,7 +318,7 @@ export function MenuPage() {
         />
         <ActionButton
           onClick={() =>
-            handleExternalLink("https://www.instagram.com/cheesesteak.uz")
+            handleExternalLink("https://www.instagram.com/noziya_milliytaomlar")
           }
           icon={<Instagram className="h-5 w-5 text-white" />}
           gradient="bg-primary hover:bg-primary/90"
@@ -330,7 +333,7 @@ export function MenuPage() {
             <p className="text-sm text-gray-600 mt-2">
               Менеджер: <span className="font-semibold">Санджар</span>
               <br />
-              Телефон: <span className="font-semibold">+998 97 155 75 05</span>
+              Телефон: <span className="font-semibold">+998 95 062 44 22</span>
             </p>
           </DialogHeader>
           <DialogFooter className="flex gap-3">

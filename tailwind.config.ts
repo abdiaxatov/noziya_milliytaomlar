@@ -20,38 +20,38 @@ const config = {
     },
     extend: {
       colors: {
-        border: "hsl(158, 100%, 15%)",       // asosiy rangdan biroz ochroq
-        input: "hsl(158, 100%, 10%)",        // asosiy rang
-        ring: "hsl(158, 100%, 20%)",         // chuqurroq yashil
-        background: "hsl(158, 50%, 95%)",    // juda och yashil fon
-        foreground: "hsl(158, 100%, 10%)",   // asosiy matn rangi
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(158, 100%, 10%)",    // asosiy rang
-          foreground: "#ffffff",             // oq matn
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(158, 100%, 20%)",    // qo‘shimcha chuqur yashil
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "#7f1d1d",                // qizil (xatolik uchun)
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "#e5e7eb",                // neytral kulrang
-          foreground: "#374151",
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(158, 100%, 15%)",    // accent sifatida ochroq yashil
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
-          DEFAULT: "#ffffff",
-          foreground: "hsl(158, 100%, 10%)",
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
         },
         card: {
-          DEFAULT: "#ffffff",
-          foreground: "hsl(158, 100%, 10%)",
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
       },
       borderRadius: {

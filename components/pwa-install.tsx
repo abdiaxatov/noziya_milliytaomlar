@@ -36,7 +36,7 @@ export default function PWAInstallPrompt() {
       // Optionally show a success message
       toast({
         title: "Ilova o'rnatildi!",
-        description: "Cheesesteak.uz endi sizning qurilmangizda.",
+        description: "Noziya Milliy Taomlar endi sizning qurilmangizda.",
       });
     };
 
@@ -56,7 +56,7 @@ export default function PWAInstallPrompt() {
     if (showPrompt && deferredPrompt) {
       toast({
         title: "Ilovani o'rnating",
-        description: "Cheesesteak.uz ni tezroq ochish uchun ilovani o'rnating",
+        description: "Noziya Milliy Taomlar ni tezroq ochish uchun ilovani o'rnating",
         action: (
           <ToastAction
             altText="O'rnatish"
