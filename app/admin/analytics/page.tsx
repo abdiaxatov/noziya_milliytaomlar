@@ -109,10 +109,24 @@ export default function AnalyticsPage() {
                     setOnlineUsers([])
                 }
             },
+
             (err) => {
                 console.error("Online Error:", err)
+                setError(err.message)
+                setLoading(false)
             }
         )
+
+        // Safety timeout in case Firebase hangs
+        const timeoutId = setTimeout(() => {
+            setLoading((prev) => {
+                if (prev) {
+                    console.warn("Analytics data fetch timed out")
+                    return false
+                }
+                return prev
+            })
+        }, 5000)
 
         // 2. Session History (Multi-day support)
         const fetchSessions = async () => {
@@ -183,6 +197,7 @@ export default function AnalyticsPage() {
 
         return () => {
             unsubOnline()
+            clearTimeout(timeoutId)
             cleanupPromise.then(cleanup => cleanup && cleanup())
         }
     }, [dateRange])
