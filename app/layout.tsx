@@ -1,4 +1,5 @@
 import type React from "react";
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
@@ -77,7 +78,9 @@ export default function RootLayout({
               {children}
               <Analytics />
             </SmoothScroll>
-            <AnalyticsTracker />
+            <Suspense fallback={null}>
+              <AnalyticsTracker />
+            </Suspense>
             <PWAInstallPrompt />
             <Toaster />
           </CartProvider>
