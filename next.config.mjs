@@ -106,8 +106,8 @@ const withPWA = withPWAInit({
         },
       },
     ],
-    // exclude manifest.json from sw precache
-    exclude: [/manifest\.json$/],
+    // exclude manifest.json and manifest-admin.json from sw precache
+    exclude: [/manifest\.json$/, /manifest-admin\.json$/],
   },
   disable: false, // Enable PWA in development to test caching
 });

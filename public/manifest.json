@@ -3,13 +3,19 @@
   "short_name": "Noziya Milliy Taomlar",
   "description": "Buyurtma berish uchun zamonaviy restoran ilovasi - Order delicious Noziya Milliy Taomlar online",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "orientation": "portrait-primary",
   "lang": "uz-UZ",
   "dir": "ltr",
-  "categories": ["food", "restaurant", "shopping"],
+  "categories": [
+    "food",
+    "restaurant",
+    "shopping"
+  ],
   "icons": [
     {
       "src": "/icon-72.png",
@@ -77,7 +83,7 @@
       "name": "Mening buyurtmalarim",
       "short_name": "Buyurtmalar",
       "description": "Buyurtmalar tarixini ko'rish",
-      "url": "/my-orders",
+      "url": "/admin/menu",
       "icons": [
         {
           "src": "/Logo.png",

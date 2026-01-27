@@ -5,7 +5,7 @@ import { AdminAuthProvider } from "@/components/admin/admin-auth-provider"
 export const metadata = {
   title: "Noziya Milliy Taomlar - Admin",
   description: "Zamonaviy restoran ovqat buyurtma tizimi",
-  manifest: "/manifest.json",
+  manifest: "/manifest-admin.json",
   icons: {
     icon: [
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
