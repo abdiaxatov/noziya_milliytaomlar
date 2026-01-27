@@ -2,7 +2,7 @@
     "name": "Noziya Milliy Taomlar - Admin",
     "short_name": "Noziya Admin",
     "description": "Buyurtma berish uchun zamonaviy restoran ilovasi - Admin Panel",
-    "start_url": "/admin/menu",
+    "start_url": "/admin/login",
     "id": "/admin/",
     "scope": "/admin/",
     "display": "standalone",
