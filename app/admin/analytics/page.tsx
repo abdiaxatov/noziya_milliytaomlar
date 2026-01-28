@@ -87,7 +87,7 @@ const PRIMARY_GRADIENT = ["bg-primary", "#eff6ff"] // Indigo/Blue based
 
 export default function AnalyticsPage() {
     // --- STATE ---
-    const [dateRange, setDateRange] = useState<"today" | "week" | "month">("today")
+    const [dateRange, setDateRange] = useState<"today" | "week" | "month" | "year">("today")
     const [chartType, setChartType] = useState<"area" | "bar" | "line">("area")
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([])
     const [sessions, setSessions] = useState<SessionData[]>([])
@@ -137,6 +137,7 @@ export default function AnalyticsPage() {
                 let daysToFetch = 1
                 if (dateRange === 'week') daysToFetch = 7
                 if (dateRange === 'month') daysToFetch = 30
+                if (dateRange === 'year') daysToFetch = 365
 
                 for (let i = 0; i < daysToFetch; i++) {
                     const d = new Date()
@@ -231,7 +232,7 @@ export default function AnalyticsPage() {
 
         // Device Stats
         const devices: Record<string, number> = {}
-        sessions.forEach(s => {
+        validSessions.forEach(s => {
             const d = s.device || "Unknown"
             devices[d] = (devices[d] || 0) + 1
         })
@@ -239,7 +240,7 @@ export default function AnalyticsPage() {
 
         // Country Stats (For Map)
         const countries: Record<string, number> = {}
-        sessions.forEach(s => {
+        validSessions.forEach(s => {
             const c = s.country || "Unknown"
             countries[c] = (countries[c] || 0) + 1
         })
@@ -249,7 +250,7 @@ export default function AnalyticsPage() {
 
         // OS Stats
         const osCounts: Record<string, number> = {}
-        sessions.forEach(s => {
+        validSessions.forEach(s => {
             const os = s.os || "Boshqa"
             osCounts[os] = (osCounts[os] || 0) + 1
         })
@@ -257,27 +258,72 @@ export default function AnalyticsPage() {
 
         // Browser Stats
         const browserCounts: Record<string, number> = {}
-        sessions.forEach(s => {
+        validSessions.forEach(s => {
             const b = s.browser || "Boshqa"
             browserCounts[b] = (browserCounts[b] || 0) + 1
         })
         const browserData = Object.entries(browserCounts).map(([name, value]) => ({ name, value }))
 
-        // Hourly Traffic
-        const hours = new Array(24).fill(0)
-        sessions.forEach(s => {
-            if (s.startTime) {
+        // Chart Data Aggregation based on DateRange
+        let chartData: { label: string, visits: number }[] = []
+
+        if (dateRange === 'today') {
+            const hours = new Array(24).fill(0)
+            validSessions.forEach(s => {
                 const d = new Date(s.startTime)
                 hours[d.getHours()]++
+            })
+            chartData = hours.map((visits, h) => ({ label: `${h}:00`, visits }))
+        } else if (dateRange === 'week') {
+            const dayNames = ["Yak", "Du", "Se", "Chor", "Pay", "Ju", "Sha"]
+            const last7Days: Record<string, number> = {}
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date()
+                d.setDate(d.getDate() - i)
+                last7Days[d.toISOString().split('T')[0]] = 0
             }
-        })
-        const hourlyData = hours.map((visits, h) => ({ time: `${h}:00`, visits }))
+            validSessions.forEach(s => {
+                const dateKey = new Date(s.startTime).toISOString().split('T')[0]
+                if (last7Days[dateKey] !== undefined) last7Days[dateKey]++
+            })
+            chartData = Object.entries(last7Days).map(([date, visits]) => {
+                const d = new Date(date)
+                return { label: dayNames[d.getDay()], visits }
+            })
+        } else if (dateRange === 'month') {
+            const last30Days: Record<string, number> = {}
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date()
+                d.setDate(d.getDate() - i)
+                last30Days[d.toISOString().split('T')[0]] = 0
+            }
+            validSessions.forEach(s => {
+                const dateKey = new Date(s.startTime).toISOString().split('T')[0]
+                if (last30Days[dateKey] !== undefined) last30Days[dateKey]++
+            })
+            chartData = Object.entries(last30Days).map(([date, visits]) => {
+                const d = new Date(date)
+                return { label: d.getDate().toString(), visits }
+            })
+        } else if (dateRange === 'year') {
+            const monthNames = ["Yan", "Feb", "Mar", "Apr", "May", "Iyun", "Iyul", "Avg", "Sen", "Okt", "Noy", "Dek"]
+            const yearData = new Array(12).fill(0)
+            const currentYear = new Date().getFullYear()
+            validSessions.forEach(s => {
+                const d = new Date(s.startTime)
+                if (d.getFullYear() === currentYear) {
+                    yearData[d.getMonth()]++
+                }
+            })
+            chartData = yearData.map((visits, m) => ({ label: monthNames[m], visits }))
+        }
 
         // Top Pages
         const pageCounts: Record<string, number> = {}
-        sessions.forEach(s => {
+        validSessions.forEach(s => {
             if (s.pages) {
                 Object.values(s.pages).forEach(p => {
+                    // Extra safety for page timestamps if we ever use them for Date
                     pageCounts[p.path] = (pageCounts[p.path] || 0) + 1
                 })
             } else {
@@ -291,7 +337,7 @@ export default function AnalyticsPage() {
 
         // Referrer Stats
         const referrerCounts: Record<string, number> = {}
-        sessions.forEach(s => {
+        validSessions.forEach(s => {
             // Parse referrer to get domain or "Direct"
             let refStr = s.referrer || "Direct"
             if (refStr !== "Direct" && refStr.startsWith("http")) {
@@ -306,7 +352,7 @@ export default function AnalyticsPage() {
 
         // Device Model Stats (replacing OS for more detail or adding alongside)
         const modelCounts: Record<string, number> = {}
-        sessions.forEach(s => {
+        validSessions.forEach(s => {
             // @ts-ignore - deviceModel might be missing in old data
             const model = s.deviceModel || s.os || "Unknown"
             modelCounts[model] = (modelCounts[model] || 0) + 1
@@ -321,10 +367,10 @@ export default function AnalyticsPage() {
             osData,
             browserData,
             countryData,
-            hourlyData,
+            chartData, // Dynamically aggregated
             topPages,
-            referrerData, // New
-            modelData, // New
+            referrerData,
+            modelData,
             bounceRate: "0%"
         }
     }, [sessions])
@@ -336,7 +382,7 @@ export default function AnalyticsPage() {
         const PrimaryColor = "#0f172a" // Approximation of the primary color from CSS (slate-900)
 
         const CommonProps = {
-            data: metrics.hourlyData,
+            data: metrics.chartData,
             margin: { top: 10, right: 10, left: 0, bottom: 0 }
         }
 
@@ -344,7 +390,7 @@ export default function AnalyticsPage() {
             return (
                 <BarChart {...CommonProps}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#eee" />
-                    <XAxis dataKey="time" axisLine={false} tickLine={false} stroke="#888" fontSize={12} />
+                    <XAxis dataKey="label" axisLine={false} tickLine={false} stroke="#888" fontSize={11} />
                     <YAxis axisLine={false} tickLine={false} stroke="#888" fontSize={12} />
                     <Tooltip contentStyle={{ borderRadius: '12px' }} />
                     <Bar dataKey="visits" fill={PrimaryColor} radius={[4, 4, 0, 0]} />
@@ -355,7 +401,7 @@ export default function AnalyticsPage() {
             return (
                 <LineChart {...CommonProps}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#eee" />
-                    <XAxis dataKey="time" axisLine={false} tickLine={false} stroke="#888" fontSize={12} />
+                    <XAxis dataKey="label" axisLine={false} tickLine={false} stroke="#888" fontSize={11} />
                     <YAxis axisLine={false} tickLine={false} stroke="#888" fontSize={12} />
                     <Tooltip contentStyle={{ borderRadius: '12px' }} />
                     <Line type="monotone" dataKey="visits" stroke={PrimaryColor} strokeWidth={3} dot={{ r: 4 }} />
@@ -371,7 +417,7 @@ export default function AnalyticsPage() {
                     </linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#eee" />
-                <XAxis dataKey="time" axisLine={false} tickLine={false} stroke="#888" fontSize={12} />
+                <XAxis dataKey="label" axisLine={false} tickLine={false} stroke="#888" fontSize={11} />
                 <YAxis axisLine={false} tickLine={false} stroke="#888" fontSize={12} />
                 <Tooltip contentStyle={{ borderRadius: '12px' }} />
                 <Area type="monotone" dataKey="visits" stroke={PrimaryColor} strokeWidth={3} fillOpacity={1} fill="url(#colorTraffic)" />
@@ -423,14 +469,14 @@ export default function AnalyticsPage() {
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 bg-card p-1 rounded-lg border shadow-sm self-start lg:self-auto">
-                    {["today", "week", "month"].map((r) => (
+                    {["today", "week", "month", "year"].map((r) => (
                         <Button
                             key={r}
                             variant={dateRange === r ? "default" : "ghost"}
                             onClick={() => setDateRange(r as any)}
-                            className="capitalize rounded-md h-8 text-xs md:text-sm"
+                            className="capitalize rounded-md h-8 text-xs md:text-sm px-3"
                         >
-                            {r === "today" ? "Bugun" : r === "week" ? "Hafta" : "Oy"}
+                            {r === "today" ? "Bugun" : r === "week" ? "Hafta" : r === "month" ? "Oy" : "Yil"}
                         </Button>
                     ))}
                     <Button
@@ -492,7 +538,7 @@ export default function AnalyticsPage() {
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle>Tashriflar Dinamikasi</CardTitle>
-                            <CardDescription>Foydalanuvchilar faolligi soatlar kesimida</CardDescription>
+                            <CardDescription>{dateRange === 'today' ? 'Soatlar kesimida' : dateRange === 'week' ? 'Kunlar kesimida' : dateRange === 'month' ? 'Sanalar kesimida' : 'Oylar kesimida'}</CardDescription>
                         </div>
                         <div className="flex bg-muted rounded-lg p-1 gap-1">
                             <Button size="icon" variant={chartType === 'area' ? 'secondary' : 'ghost'} className="h-6 w-6" onClick={() => setChartType('area')}><Activity className="w-4 h-4" /></Button>
@@ -544,20 +590,12 @@ export default function AnalyticsPage() {
                 </Card>
             </div>
 
-            {/* Tech Specs -- SCROLLABLE ON MOBILE */}
-            <div className="flex overflow-x-auto pb-4 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-                <div className="min-w-[280px] snap-center">
-                    <TechCard title="Qurilma Turi" icon={<Smartphone className="w-4 h-4" />} data={metrics.modelData} />
-                </div>
-                <div className="min-w-[280px] snap-center">
-                    <TechCard title="Operatsion Tizim" icon={<Laptop className="w-4 h-4" />} data={metrics.osData} />
-                </div>
-                <div className="min-w-[280px] snap-center">
-                    <TechCard title="Brauzer" icon={<Chrome className="w-4 h-4" />} data={metrics.browserData} />
-                </div>
-                <div className="min-w-[280px] snap-center">
-                    <TechCard title="Manba (Referrer)" icon={<ArrowUpRight className="w-4 h-4" />} data={metrics.referrerData} />
-                </div>
+            {/* Tech Specs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <TechCard title="Qurilma Turi" icon={<Smartphone className="w-4 h-4 text-pink-500" />} data={metrics.modelData} />
+                <TechCard title="Operatsion Tizim" icon={<Laptop className="w-4 h-4 text-blue-500" />} data={metrics.osData} />
+                <TechCard title="Brauzer" icon={<Chrome className="w-4 h-4 text-orange-500" />} data={metrics.browserData} />
+                <TechCard title="Manba (Referrer)" icon={<ArrowUpRight className="w-4 h-4 text-green-500" />} data={metrics.referrerData} />
             </div>
 
             {/* Live Feed */}
@@ -614,34 +652,61 @@ function MetricCard({ title, value, icon, desc, trend }: any) {
 }
 
 function TechCard({ title, icon, data }: any) {
+    const total = data.reduce((acc: number, item: any) => acc + item.value, 0)
+
     return (
-        <Card className="border-none shadow-md bg-card/60 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center gap-2 pb-2">
-                {icon}
-                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Card className="border-none shadow-lg bg-card/60 backdrop-blur-sm overflow-hidden group">
+            <CardHeader className="flex flex-row items-center gap-2 pb-2 bg-muted/20">
+                <div className="p-1.5 bg-background rounded-md shadow-sm">{icon}</div>
+                <CardTitle className="text-sm font-bold tracking-tight">{title}</CardTitle>
             </CardHeader>
-            <CardContent>
-                <div className="h-[200px] w-full flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={data}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={50}
-                                outerRadius={80}
-                                paddingAngle={5}
-                                dataKey="value"
-                                stroke="none"
-                            >
-                                {data.map((entry: any, index: number) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                        </PieChart>
-                    </ResponsiveContainer>
+            <CardContent className="p-0">
+                <div className="p-4 space-y-4">
+                    <div className="h-[120px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={data}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={35}
+                                    outerRadius={55}
+                                    paddingAngle={2}
+                                    dataKey="value"
+                                    stroke="none"
+                                >
+                                    {data.map((entry: any, index: number) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    trigger="hover"
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', fontSize: '12px' }}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className="space-y-2 px-4 pb-4">
+                        {data.slice(0, 4).map((item: any, i: number) => (
+                            <div key={i} className="flex flex-col gap-1">
+                                <div className="flex justify-between text-xs font-medium">
+                                    <span className="text-muted-foreground truncate max-w-[120px]">{item.name}</span>
+                                    <span>{Math.round((item.value / total) * 100)}%</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full transition-all duration-500"
+                                        style={{
+                                            width: `${(item.value / total) * 100}%`,
+                                            backgroundColor: COLORS[i % COLORS.length]
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        {data.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">Ma'lumot yo'q</p>}
+                    </div>
                 </div>
             </CardContent>
         </Card>
