@@ -29,11 +29,20 @@ export function CategoryFilter({
       .filter((cat) => {
         // Filter out inactive categories
         if (cat.active === false) return false;
-        // Filter out discount categories if no active discounts
-        if (cat.isDiscountCategory && !hasActiveDiscounts) return false;
+
+        // Always show the discount category if it exists and is active
+        // skipping the hasActiveDiscounts check to ensure visibility
+
         return true;
       })
       .sort((a, b) => {
+        // Force discount category to the very beginning
+        const isADiscount = a.isDiscountCategory || getLocalizedName(a, 'uz').toLowerCase() === 'chegirmalar';
+        const isBDiscount = b.isDiscountCategory || getLocalizedName(b, 'uz').toLowerCase() === 'chegirmalar';
+
+        if (isADiscount && !isBDiscount) return -1;
+        if (!isADiscount && isBDiscount) return 1;
+
         const orderA = a.order || 0;
         const orderB = b.order || 0;
 
@@ -75,25 +84,50 @@ export function CategoryFilter({
               {t("common.all")}
             </Button>
 
-            {sortedCategories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                size="sm"
-                className={`rounded-full transition-all duration-300 ${selectedCategory === category.id
-                  ? category.isDiscountCategory
-                    ? "bg-red-600 hover:bg-red-700 text-white shadow-md scale-105 border-0"
-                    : "bg-primary text-white shadow-md scale-105"
-                  : category.isDiscountCategory
-                    ? "border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:scale-105"
+            {sortedCategories.map((category) => {
+              const matchesSelected = selectedCategory === category.id;
+              const isDiscount = category.isDiscountCategory ||
+                getLocalizedName(category, 'uz').toLowerCase() === 'chegirmalar' ||
+                getLocalizedName(category, 'ru').toLowerCase() === 'скидки';
+
+              if (isDiscount) {
+                return (
+                  <Button
+                    key={category.id}
+                    variant={matchesSelected ? "default" : "outline"}
+                    size="sm"
+                    className={`rounded-full transition-all duration-300 relative overflow-hidden ${matchesSelected
+                        ? "bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white shadow-lg scale-105 border-0"
+                        : "border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:scale-105 animate-pulse-subtle"
+                      }`}
+                    onClick={() => onSelectCategory(category.id)}
+                  >
+                    <span className="flex items-center gap-1">
+                      <span className="text-sm">🔥</span>
+                      {getLocalizedName(category, language)}
+                    </span>
+                    {matchesSelected && (
+                      <span className="absolute inset-0 bg-white/20 animate-shine" />
+                    )}
+                  </Button>
+                );
+              }
+
+              return (
+                <Button
+                  key={category.id}
+                  variant={matchesSelected ? "default" : "outline"}
+                  size="sm"
+                  className={`rounded-full transition-all duration-300 ${matchesSelected
+                    ? "bg-primary text-white shadow-md scale-105"
                     : "border-primary/20 text-gray-600 hover:bg-primary/10 hover:text-primary hover:border-primary/50 hover:scale-105"
-                  }`}
-                onClick={() => onSelectCategory(category.id)}
-              >
-                {category.isDiscountCategory && "% "}
-                {getLocalizedName(category, language)}
-              </Button>
-            ))}
+                    }`}
+                  onClick={() => onSelectCategory(category.id)}
+                >
+                  {getLocalizedName(category, language)}
+                </Button>
+              );
+            })}
           </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
