@@ -120,7 +120,7 @@ export function MenuPage() {
               description_en: data.description_en || "",
               price: data.price || 0,
               discountPrice: data.discountPrice || null,
-              discountEndsAt: data.discountEndsAt || null,
+              discountEndsAt: data.discountEndsAt?.toDate?.() ? data.discountEndsAt.toDate() : (data.discountEndsAt || null),
               category: data.category || "",
               categoryId: data.categoryId || "",
               imageUrl: data.imageUrl || data.image,
@@ -176,10 +176,20 @@ export function MenuPage() {
       // Check if selected category is a discount category
       const selectedCat = categories.find((c) => c.id === selectedCategory);
       if (selectedCat?.isDiscountCategory) {
-        // Filter by active discounts
-        filtered = filtered.filter(
-          (item) => item.discountEndsAt && new Date(item.discountEndsAt) > new Date()
-        );
+        // Filter by active discounts: either has price and no end date, or price and future end date
+        filtered = filtered.filter((item) => {
+          const hasDiscountPrice = item.discountPrice !== null && item.discountPrice !== undefined;
+          if (!hasDiscountPrice) return false;
+
+          if (!item.discountEndsAt) return true; // Active indefinitely
+
+          try {
+            const endDate = new Date(item.discountEndsAt);
+            return !isNaN(endDate.getTime()) && endDate > new Date();
+          } catch (e) {
+            return true; // Fallback to active if date is malformed but price exists
+          }
+        });
       } else {
         filtered = filtered.filter(
           (item) => item.categoryId === selectedCategory
@@ -191,9 +201,17 @@ export function MenuPage() {
 
   // 🔹 Check for active discounts
   const hasActiveDiscounts = useMemo(() => {
-    return menuItems.some(
-      (item) => item.discountEndsAt && new Date(item.discountEndsAt) > new Date()
-    );
+    return menuItems.some((item) => {
+      const hasDiscountPrice = item.discountPrice !== null && item.discountPrice !== undefined;
+      if (!hasDiscountPrice) return false;
+      if (!item.discountEndsAt) return true;
+      try {
+        const endDate = new Date(item.discountEndsAt);
+        return !isNaN(endDate.getTime()) && endDate > new Date();
+      } catch (e) {
+        return true;
+      }
+    });
   }, [menuItems]);
 
   // 🔹 Background Image Preloader (Barcha rasmlarni oldindan yuklash)
