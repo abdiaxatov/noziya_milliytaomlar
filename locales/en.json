@@ -268,9 +268,9 @@
         "pwa": {
             "installTitle": "Install Application",
             "installReady": "🎉 Application ready to install!",
-            "installToastTitle": "Noziya Milliy Taomlar",
-            "installToastDesc": "Install the app for a better and faster experience!",
-            "installToastAction": "Install",
+            "installToastTitle": "Noziya — National Dishes",
+            "installToastDesc": "Install the app for a premium dining experience at your fingertips! ✨",
+            "installToastAction": "Install Now",
             "installSuccess": "App installed!",
             "installSuccessDesc": "Noziya Milliy Taomlar is now on your device.",
             "installBtn": "Install Application",

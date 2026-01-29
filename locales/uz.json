@@ -269,8 +269,8 @@
     "pwa": {
         "installTitle": "Ilovani o'rnatish",
         "installReady": "🎉 Ilova o'rnatishga tayyor!",
-        "installToastTitle": "Noziya Milliy Taomlar",
-        "installToastDesc": "Ilovani o'rnating va yanada qulayroq foydalaning!",
+        "installToastTitle": "Noziya — Milliy Taomlar",
+        "installToastDesc": "Ilovani o'rnatib, mazali taomlar olamiga yanada qulayroq kiring! ✨",
         "installToastAction": "O'rnatish",
         "installSuccess": "Ilova o'rnatildi!",
         "installSuccessDesc": "Noziya Milliy Taomlar endi sizning qurilmangizda.",
