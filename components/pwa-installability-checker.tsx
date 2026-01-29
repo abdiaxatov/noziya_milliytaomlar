@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { useLanguage } from "@/hooks/use-language";
 
 interface PWAInstallCriteria {
   name: string;
@@ -20,6 +21,7 @@ interface PWAInstallCriteria {
 }
 
 export default function PWAInstallabilityChecker() {
+  const { t } = useLanguage();
   const [criteria, setCriteria] = useState<PWAInstallCriteria[]>([]);
   const [isInstallable, setIsInstallable] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -35,10 +37,10 @@ export default function PWAInstallabilityChecker() {
     const isSecure =
       location.protocol === "https:" || location.hostname === "localhost";
     checks.push({
-      name: "HTTPS yoki localhost",
+      name: t("pwa.checks.https"),
       status: isSecure ? "pass" : "fail",
-      description: "Ilova HTTPS orqali yoki localhost da ishlamog'i kerak",
-      details: isSecure ? "✅ To'g'ri" : "❌ HTTP ishlatilayotgan",
+      description: t("pwa.checks.httpsDesc"),
+      details: isSecure ? t("pwa.checks.pass") : t("pwa.checks.fail"),
     });
 
     // 2. Service Worker
@@ -52,12 +54,12 @@ export default function PWAInstallabilityChecker() {
       }
     }
     checks.push({
-      name: "Service Worker",
+      name: t("pwa.checks.sw"),
       status: hasServiceWorker ? "pass" : "fail",
-      description: "Service Worker ro'yxatdan o'tgan bo'lishi kerak",
+      description: t("pwa.checks.swDesc"),
       details: hasServiceWorker
-        ? "✅ Ro'yxatdan o'tgan"
-        : "❌ Ro'yxatdan o'tmagan",
+        ? t("pwa.checks.swOk")
+        : t("pwa.checks.swFail"),
     });
 
     // 3. Web App Manifest
@@ -91,14 +93,14 @@ export default function PWAInstallabilityChecker() {
     }
 
     checks.push({
-      name: "Web App Manifest",
+      name: t("pwa.checks.manifest"),
       status: hasManifest && manifestValid ? "pass" : "fail",
-      description: "Manifest.json to'g'ri sozlangan bo'lishi kerak",
+      description: t("pwa.checks.manifestDesc"),
       details: hasManifest
         ? manifestValid
-          ? "✅ To'g'ri"
-          : "❌ Kerakli maydonlar yo'q"
-        : "❌ Manifest topilmadi",
+          ? t("pwa.checks.manifestOk")
+          : t("pwa.checks.manifestNoFields")
+        : t("pwa.checks.manifestNoFile"),
     });
 
     // 4. beforeinstallprompt event
@@ -117,22 +119,22 @@ export default function PWAInstallabilityChecker() {
     // Trigger install prompt check
     setTimeout(() => {
       checks.push({
-        name: "Install Prompt",
+        name: t("pwa.checks.prompt"),
         status: supportsInstallPrompt ? "pass" : "warning",
-        description: "Brauzer install prompt ni qo'llab-quvvatlashi kerak",
+        description: t("pwa.checks.promptDesc"),
         details: supportsInstallPrompt
-          ? "✅ Qo'llab-quvvatlanadi"
-          : "⚠️ Hali aniqlanmadi",
+          ? t("pwa.checks.promptOk")
+          : t("pwa.checks.promptWaiting"),
       });
       setCriteria(checks);
     }, 1000);
 
     // 5. User engagement (simulated)
     checks.push({
-      name: "Foydalanuvchi o'zaro ta'siri",
+      name: t("pwa.checks.interaction"),
       status: "warning",
-      description: "Chrome 30 soniya va 2 tashrif talab qiladi",
-      details: "⚠️ Development rejimida cheklangan",
+      description: t("pwa.checks.interactionDesc"),
+      details: t("pwa.checks.interactionDev"),
     });
 
     setCriteria(checks);
@@ -185,14 +187,13 @@ export default function PWAInstallabilityChecker() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🔍 PWA Installability Tekshiruvi
+            {t("pwa.checkerTitle")}
             <Badge variant={isInstallable ? "default" : "secondary"}>
-              {isInstallable ? "O'rnatish mumkin" : "O'rnatish mumkin emas"}
+              {isInstallable ? t("pwa.installable") : t("pwa.notInstallable")}
             </Badge>
           </CardTitle>
           <CardDescription>
-            Chrome "Install app" tugmasini ko'rsatish uchun barcha kriteriyalar
-            bajarilishi kerak
+            {t("pwa.checkerDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -221,44 +222,38 @@ export default function PWAInstallabilityChecker() {
           {isInstallable && (
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <h3 className="font-semibold text-blue-900 mb-2">
-                🎉 Ilova o'rnatishga tayyor!
+                {t("pwa.installReady")}
               </h3>
               <Button onClick={handleInstall} className="w-full">
-                📱 Ilovani o'rnatish
+                📱 {t("pwa.installBtn")}
               </Button>
             </div>
           )}
 
           <div className="mt-6 p-4 bg-gray-50 border rounded-lg">
-            <h3 className="font-semibold mb-2">🔧 Muammolarni hal qilish:</h3>
+            <h3 className="font-semibold mb-2">{t("pwa.troubleshooting")}</h3>
             <div className="space-y-2 text-sm">
               <div>
-                <strong>Service Worker yo'q:</strong> next.config.mjs da PWA
-                yoqilganligini tekshiring
+                <strong>Service Worker:</strong> {t("pwa.tips.sw")}
               </div>
               <div>
-                <strong>Manifest xato:</strong> public/manifest.json ni
-                tekshiring
+                <strong>Manifest:</strong> {t("pwa.tips.manifest")}
               </div>
               <div>
-                <strong>HTTPS yo'q:</strong> Production da HTTPS ishlatilishi
-                kerak
+                <strong>HTTPS:</strong> {t("pwa.tips.https")}
               </div>
               <div>
-                <strong>Install prompt yo'q:</strong> Foydalanuvchi 30 soniya
-                o'zaro ta'sir qilishi kerak
+                <strong>Install prompt:</strong> {t("pwa.tips.prompt")}
               </div>
             </div>
           </div>
 
           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <h3 className="font-semibold text-yellow-900 mb-2">
-              ⚠️ Development rejimi
+              {t("pwa.devMode")}
             </h3>
             <p className="text-sm text-yellow-800">
-              Production da test qilish uchun{" "}
-              <code>npm run build && npm start</code> ishlatib, HTTPS sertifikat
-              bilan (masalan, ngrok) test qiling.
+              {t("pwa.devModeDesc")}
             </p>
           </div>
         </CardContent>

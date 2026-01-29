@@ -52,6 +52,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 // Use try-catch or conditional import if possible, but for Next.js explicit import is better.
 // Assuming WorldMap is created in previous step.
 import WorldMap from "@/components/admin/analytics/world-map"
+import { useLanguage } from "@/hooks/use-language"
 
 // --- TYPES ---
 type SessionData = {
@@ -93,6 +94,7 @@ export default function AnalyticsPage() {
     const [sessions, setSessions] = useState<SessionData[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const { t, language } = useLanguage()
 
     // --- DATA FETCHING ---
     useEffect(() => {
@@ -462,10 +464,10 @@ export default function AnalyticsPage() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-primary bg-clip-text text-transparent">
-                        Analitika Dashboard
+                        {t("analytics.title")}
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        Mukammal statistik tahlil
+                        {t("analytics.subtitle")}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 bg-card p-1 rounded-lg border shadow-sm self-start lg:self-auto">
@@ -476,14 +478,14 @@ export default function AnalyticsPage() {
                             onClick={() => setDateRange(r as any)}
                             className="capitalize rounded-md h-8 text-xs md:text-sm px-3"
                         >
-                            {r === "today" ? "Bugun" : r === "week" ? "Hafta" : r === "month" ? "Oy" : "Yil"}
+                            {t(`common.${r}`)}
                         </Button>
                     ))}
                     <Button
                         variant="outline"
                         onClick={() => window.location.reload()}
                         className="h-8 w-8 p-0 ml-2"
-                        title="Yangilash"
+                        title={t("common.updated")}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-cw"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></svg>
                     </Button>
@@ -494,26 +496,26 @@ export default function AnalyticsPage() {
             <div className="flex overflow-x-auto pb-4 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
                 <div className="min-w-[280px] snap-center">
                     <MetricCard
-                        title="Jami Tashriflar"
+                        title={t("analytics.metrics.visits")}
                         value={metrics.totalVisits}
                         icon={<Users className="w-4 h-4 text-blue-500" />}
-                        desc="+12% kechagidan" trend="up"
+                        desc={t("analytics.metrics.yesterdayTrend")} trend="up"
                     />
                 </div>
                 <div className="min-w-[280px] snap-center">
                     <MetricCard
-                        title="Ko'rilgan Sahifalar"
+                        title={t("analytics.metrics.pageviews")}
                         value={metrics.totalPageviews}
                         icon={<MousePointerClick className="w-4 h-4 text-purple-500" />}
-                        desc="Sahifa/Tashrif: 3.2" trend="up"
+                        desc={t("analytics.metrics.pageVisit")} trend="up"
                     />
                 </div>
                 <div className="min-w-[280px] snap-center">
                     <MetricCard
-                        title="O'rtacha Vaqt"
+                        title={t("analytics.metrics.avgTime")}
                         value={metrics.avgDuration}
                         icon={<Clock className="w-4 h-4 text-green-500" />}
-                        desc="Juda yaxshi natija" trend="up"
+                        desc={t("analytics.metrics.goodResult")} trend="up"
                     />
                 </div>
                 <div className="min-w-[280px] snap-center">
@@ -521,12 +523,12 @@ export default function AnalyticsPage() {
                         {/* Decorative Elements */}
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-white/20 transition-all" />
                         <CardHeader className="flex flex-row items-center justify-between pb-2 z-10 relative">
-                            <CardTitle className="text-sm font-medium text-white/80">Hozir Online</CardTitle>
+                            <CardTitle className="text-sm font-medium text-white/80">{t("analytics.metrics.online")}</CardTitle>
                             <Activity className="h-4 w-4 animate-pulse text-white" />
                         </CardHeader>
                         <CardContent className="z-10 relative">
                             <div className="text-4xl font-bold">{onlineUsers.length}</div>
-                            <p className="text-xs text-white/70 mt-1">Real vaqt rejimida</p>
+                            <p className="text-xs text-white/70 mt-1">{t("analytics.metrics.realtime")}</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -537,8 +539,8 @@ export default function AnalyticsPage() {
                 <Card className="col-span-1 lg:col-span-4 border-none shadow-lg bg-card/60 backdrop-blur-sm">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle>Tashriflar Dinamikasi</CardTitle>
-                            <CardDescription>{dateRange === 'today' ? 'Soatlar kesimida' : dateRange === 'week' ? 'Kunlar kesimida' : dateRange === 'month' ? 'Sanalar kesimida' : 'Oylar kesimida'}</CardDescription>
+                            <CardTitle>{t("analytics.charts.dynamic")}</CardTitle>
+                            <CardDescription>{dateRange === 'today' ? t("analytics.charts.hourly") : dateRange === 'week' ? t("analytics.charts.daily") : dateRange === 'month' ? t("analytics.charts.monthly") : t("analytics.charts.annual")}</CardDescription>
                         </div>
                         <div className="flex bg-muted rounded-lg p-1 gap-1">
                             <Button size="icon" variant={chartType === 'area' ? 'secondary' : 'ghost'} className="h-6 w-6" onClick={() => setChartType('area')}><Activity className="w-4 h-4" /></Button>
@@ -558,23 +560,23 @@ export default function AnalyticsPage() {
                 {/* World Map & Country List -- Enhanced Layout */}
                 <Card className="col-span-1 lg:col-span-3 border-none shadow-lg bg-card/60 backdrop-blur-sm overflow-hidden flex flex-col">
                     <CardHeader className="pb-2">
-                        <CardTitle className="flex items-center gap-2"><Globe className="w-5 h-5 text-blue-500" /> Geografiya</CardTitle>
-                        <CardDescription>Foydalanuvchilar qayerdan kirmoqda?</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Globe className="w-5 h-5 text-blue-500" /> {t("analytics.charts.geography")}</CardTitle>
+                        <CardDescription>{t("analytics.charts.whereFrom")}</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0 flex-1 flex flex-col md:flex-row">
                         <div className="flex-1 min-h-[250px] md:min-h-[300px] bg-blue-50/30 dark:bg-blue-900/10 relative">
                             {/* Map Overlay info */}
                             <div className="absolute top-4 left-4 z-10 bg-background/80 backdrop-blur px-3 py-1 rounded-full border text-xs font-medium shadow-sm">
-                                {metrics.countryData.length} Davlat
+                                {metrics.countryData.length} {t("analytics.charts.countries")}
                             </div>
                             <WorldMap data={metrics.countryData} />
                         </div>
                         <div className="md:w-[250px] border-t md:border-t-0 md:border-l border-border/50 bg-background/40">
                             <div className="p-3 border-b border-border/50 bg-muted/20">
-                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Top Davlatlar</span>
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("analytics.charts.topCountries")}</span>
                             </div>
                             <ScrollArea className="h-[250px] md:h-[300px]">
-                                {metrics.countryData.length === 0 && <p className="text-center text-muted-foreground text-sm py-8">Ma'lumot yo'q</p>}
+                                {metrics.countryData.length === 0 && <p className="text-center text-muted-foreground text-sm py-8">{t("analytics.charts.noData")}</p>}
                                 {metrics.countryData.map((c, i) => (
                                     <div key={i} className="flex items-center justify-between py-3 px-4 hover:bg-muted/50 transition-colors border-b border-border/30 last:border-0 relative group">
                                         <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-blue-500 scale-y-0 group-hover:scale-y-100 transition-transform origin-center" />
@@ -592,20 +594,20 @@ export default function AnalyticsPage() {
 
             {/* Tech Specs */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <TechCard title="Qurilma Turi" icon={<Smartphone className="w-4 h-4 text-pink-500" />} data={metrics.modelData} />
-                <TechCard title="Operatsion Tizim" icon={<Laptop className="w-4 h-4 text-blue-500" />} data={metrics.osData} />
-                <TechCard title="Brauzer" icon={<Chrome className="w-4 h-4 text-orange-500" />} data={metrics.browserData} />
-                <TechCard title="Manba (Referrer)" icon={<ArrowUpRight className="w-4 h-4 text-green-500" />} data={metrics.referrerData} />
+                <TechCard title={t("analytics.tech.deviceType")} icon={<Smartphone className="w-4 h-4 text-pink-500" />} data={metrics.modelData} />
+                <TechCard title={t("analytics.tech.os")} icon={<Laptop className="w-4 h-4 text-blue-500" />} data={metrics.osData} />
+                <TechCard title={t("analytics.tech.browser")} icon={<Chrome className="w-4 h-4 text-orange-500" />} data={metrics.browserData} />
+                <TechCard title={t("analytics.tech.referrer")} icon={<ArrowUpRight className="w-4 h-4 text-green-500" />} data={metrics.referrerData} />
             </div>
 
             {/* Live Feed */}
             <Card className="border-none shadow-lg bg-card/60 backdrop-blur-sm">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><MapIcon className="w-4 h-4 text-green-500" /> Jonli Efir</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><MapIcon className="w-4 h-4 text-green-500" /> {t("analytics.charts.liveFeed")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-[200px]">
-                        {onlineUsers.length === 0 && <p className="text-muted-foreground text-center py-8">Hozircha hech kim yo'q</p>}
+                        {onlineUsers.length === 0 && <p className="text-muted-foreground text-center py-8">{t("analytics.charts.noOneOnline")}</p>}
                         {onlineUsers.map((u, i) => (
                             <div key={i} className="flex items-center justify-between py-3 border-b last:border-0 hover:bg-muted/50 px-4 rounded transition-all animate-in slide-in-from-left-2">
                                 <div className="flex items-center gap-3">

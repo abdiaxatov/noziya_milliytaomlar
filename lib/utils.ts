@@ -5,15 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("uz-UZ", {
+export function formatCurrency(amount: number, lang: string = "uz"): string {
+  const suffix = lang === "uz" ? " so'm" : lang === "ru" ? " сум" : " UZS";
+  return new Intl.NumberFormat(lang === "uz" ? "uz-UZ" : lang === "ru" ? "ru-RU" : "en-US", {
     style: "currency",
     currency: "UZS",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   })
     .format(amount)
-    .replace("UZS", " сум")
+    .replace("UZS", suffix)
 }
 
 export function formatNumber(num: number): string {

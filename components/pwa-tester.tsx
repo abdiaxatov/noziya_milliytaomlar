@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useLanguage } from '@/hooks/use-language'
 
 export default function PWATester() {
+  const { t } = useLanguage()
   const [isInstallable, setIsInstallable] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
@@ -16,50 +18,50 @@ export default function PWATester() {
 
     // Check if running in standalone mode (installed PWA)
     if (window.matchMedia('(display-mode: standalone)').matches) {
-      status.push('✅ PWA standalone rejimida ishlayapti')
+      status.push(t('pwa.status.standalone'))
       setIsInstalled(true)
     } else {
-      status.push('ℹ️ Brauzer rejimida ishlayapti')
+      status.push(t('pwa.status.browser'))
     }
 
     // Check if service worker is registered
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(registrations => {
         if (registrations.length > 0) {
-          status.push('✅ Service Worker ro\'yxatdan o\'tgan')
+          status.push(t('pwa.status.swRegistered'))
         } else {
-          status.push('❌ Service Worker ro\'yxatdan o\'tmagan')
+          status.push(t('pwa.status.swNotRegistered'))
         }
       })
     }
 
     // Check manifest
     if ('manifest' in document.createElement('link')) {
-      status.push('✅ Manifest qo\'llab-quvvatlanadi')
+      status.push(t('pwa.status.manifestSupported'))
     }
 
     // Check HTTPS or localhost
     if (location.protocol === 'https:' || location.hostname === 'localhost') {
-      status.push('✅ HTTPS yoki localhost')
+      status.push(t('pwa.status.httpsLocalhost'))
     } else {
-      status.push('❌ HTTPS talab qilinadi')
+      status.push(t('pwa.status.httpsRequired'))
     }
 
     // Check beforeinstallprompt support
     if ('onbeforeinstallprompt' in window) {
-      status.push('✅ beforeinstallprompt qo\'llab-quvvatlanadi')
+      status.push(t('pwa.status.promptSupported'))
     }
 
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault()
       setDeferredPrompt(e)
       setIsInstallable(true)
-      status.push('✅ Ilova o\'rnatishga tayyor')
+      status.push(t('pwa.status.ready'))
       setPwaStatus(status)
     }
 
     const handleAppInstalled = () => {
-      status.push('✅ Ilova muvaffaqiyatli o\'rnatildi!')
+      status.push(t('pwa.status.success'))
       setIsInstalled(true)
       setIsInstallable(false)
       setPwaStatus([...status])
@@ -106,7 +108,7 @@ export default function PWATester() {
           <CardTitle className="flex items-center gap-2">
             📱 PWA/WebAPK Test
             <Badge variant={isInstalled ? "default" : "secondary"}>
-              {isInstalled ? "O'rnatilgan" : "O'rnatilmagan"}
+              {isInstalled ? t("pwa.installed") : t("pwa.notInstalled")}
             </Badge>
           </CardTitle>
           <CardDescription>
@@ -137,7 +139,7 @@ export default function PWATester() {
             <div>
               <h3 className="font-semibold mb-2">O'rnatish:</h3>
               <Button onClick={handleInstall} className="w-full">
-                📥 Ilovani o'rnatish (WebAPK)
+                {t("pwa.installWebAPK")}
               </Button>
             </div>
           )}

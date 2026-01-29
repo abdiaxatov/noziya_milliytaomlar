@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/hooks/use-language";
 
 interface DiscountTimerProps {
     endsAt: string; // ISO Date string
@@ -12,6 +13,7 @@ interface DiscountTimerProps {
 export function DiscountTimer({ endsAt, className }: DiscountTimerProps) {
     const [timeLeft, setTimeLeft] = useState<string>("");
     const [isExpired, setIsExpired] = useState(false);
+    const { t, language } = useLanguage();
 
     useEffect(() => {
         const calculateTimeLeft = () => {
@@ -27,11 +29,11 @@ export function DiscountTimer({ endsAt, className }: DiscountTimerProps) {
 
                 // Format: "2k 12:30:05" or "12:30:05"
                 return days > 0
-                    ? `${days}k ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+                    ? `${days}${language === "uz" ? "k" : language === "ru" ? "д" : "d"} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
                     : `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
             } else {
                 setIsExpired(true);
-                return "Tugadi";
+                return t("menu.outOfStock");
             }
         };
 

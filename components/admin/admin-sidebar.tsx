@@ -17,6 +17,8 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "./admin-auth-provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useLanguage } from "@/hooks/use-language";
 
 const NavItem = memo(
   ({
@@ -108,18 +110,19 @@ export const AdminSidebar = memo(() => {
   const pathname = usePathname();
   const { open, toggleSidebar } = useSidebar();
   const { userRole, signOut } = useAuth();
+  const { t } = useLanguage();
 
   const navItems = [
     {
       href: "/admin/menu",
       icon: <Coffee />,
-      title: "Menyu",
+      title: t("nav.menu"),
       roles: ["admin"],
     },
     {
       href: "/admin/analytics",
       icon: <Activity />,
-      title: "Analitika",
+      title: t("nav.analytics"),
       roles: ["admin"],
     },
     // Add more items here as they are uncommented/ready
@@ -153,13 +156,14 @@ export const AdminSidebar = memo(() => {
               badge={item.badge}
             />
           ))}
+          <LanguageSwitcher isMobile={true} />
           {/* Mobile Logout Button (optional, or put in settings) */}
           <button
             onClick={signOut}
             className="flex flex-col items-center justify-center gap-1 p-2 text-muted-foreground hover:text-red-500 rounded-xl"
           >
             <LogOut className="h-6 w-6" />
-            <span className="text-[10px] font-medium">Chiqish</span>
+            <span className="text-[10px] font-medium">{t("nav.logout")}</span>
           </button>
         </div>
       </div>
@@ -183,14 +187,18 @@ export const AdminSidebar = memo(() => {
               <img src="/Logo.png" alt="Logo" className="h-8 w-8 object-contain" />
             </div>
             {open && (
-              <div className="animate-in slide-in-from-left-2 duration-200">
-                <h1 className="font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
-                  Noziya Milliy Taomlar
-                </h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Admin Panel</p>
+              <div className="flex flex-1 items-center justify-between min-w-0">
+                <div className="animate-in slide-in-from-left-2 duration-200">
+                  <h1 className="font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent truncate max-w-[120px]">
+                    Noziya
+                  </h1>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Admin Panel</p>
+                </div>
+                <LanguageSwitcher variant="ghost" className="h-8 px-2" />
               </div>
             )}
           </div>
+          {!open && <LanguageSwitcher variant="ghost" size="icon" className="absolute bottom-20 left-1/2 -translate-x-1/2" />}
         </div>
 
         {/* Navigation */}
@@ -233,7 +241,7 @@ export const AdminSidebar = memo(() => {
             onClick={signOut}
           >
             <LogOut className="h-4 w-4" />
-            {open && <span>Chiqish</span>}
+            {open && <span>{t("nav.logout")}</span>}
           </Button>
         </div>
       </aside>

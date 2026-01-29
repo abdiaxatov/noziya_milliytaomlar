@@ -5,6 +5,7 @@ import { collection, addDoc, updateDoc, doc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -13,6 +14,7 @@ import { Loader2, ImageIcon, Upload, X, ChevronLeft } from "lucide-react"
 import type { Banner, Category } from "@/types"
 import { uploadToGitHub } from "@/lib/github-upload"
 import Image from "next/image"
+import { useLanguage } from "@/hooks/use-language"
 
 interface BannerFormProps {
     banner?: Banner | null
@@ -24,6 +26,9 @@ interface BannerFormProps {
 export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFormProps) {
     const [formData, setFormData] = useState({
         name: banner?.name || "",
+        name_uz: banner?.name_uz || "",
+        name_ru: banner?.name_ru || "",
+        name_en: banner?.name_en || "",
         imageUrl: banner?.imageUrl || "",
         categoryId: banner?.categoryId || "all", // "all" for general banner
         active: banner?.active !== false,
@@ -35,10 +40,12 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [isUploadingImage, setIsUploadingImage] = useState(false)
     const [showImagePreview, setShowImagePreview] = useState(false)
-    const [imageFileName, setImageFileName] = useState("Hech qanday fayl tanlanmagan")
 
-    const imageInputRef = useRef<HTMLInputElement>(null)
     const { toast } = useToast()
+    const { t } = useLanguage()
+    const imageInputRef = useRef<HTMLInputElement>(null)
+
+    const [imageFileName, setImageFileName] = useState(t("admin.form.fileNotSelected"))
 
     // Check image validity when imageUrl changes
     useEffect(() => {
@@ -79,14 +86,14 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                 uploadImageFile(file)
             } else {
                 toast({
-                    title: "Noto'g'ri fayl formati",
-                    description: "Faqat rasm fayllar qabul qilinadi",
+                    title: t("admin.form.errors.invalidFormat"),
+                    description: t("admin.form.errors.imageDesc"),
                     variant: "destructive",
                 })
-                setImageFileName("Hech qanday fayl tanlanmagan")
+                setImageFileName(t("admin.form.fileNotSelected"))
             }
         } else {
-            setImageFileName("Hech qanday fayl tanlanmagan")
+            setImageFileName(t("admin.form.fileNotSelected"))
         }
     }
 
@@ -100,21 +107,21 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                 setFormData((prev) => ({ ...prev, imageUrl: result.url }))
                 setImageFile(null)
                 toast({
-                    title: "Rasm yuklandi",
-                    description: "Banner rasmi muvaffaqiyatli yuklandi",
+                    title: t("admin.form.imageUploaded"),
+                    description: t("admin.form.bannerUploadedDesc") || "Banner rasmi muvaffaqiyatli yuklandi",
                 })
             } else {
                 toast({
-                    title: "Yuklashda xatolik",
-                    description: result.error || "Rasm yuklanmadi",
+                    title: t("admin.form.errors.uploadError"),
+                    description: result.error || t("admin.form.errors.imageNotUploaded"),
                     variant: "destructive",
                 })
             }
         } catch (error) {
             console.warn("Image upload error:", error)
             toast({
-                title: "Xatolik",
-                description: "Rasm yuklashda xatolik yuz berdi",
+                title: t("common.error"),
+                description: t("admin.form.errors.imageUploadError"),
                 variant: "destructive",
             })
         } finally {
@@ -124,10 +131,12 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!formData.name || !formData.imageUrl) {
+        const hasAnyName = (formData.name_uz || "").trim() || (formData.name_ru || "").trim() || (formData.name_en || "").trim() || (formData.name || "").trim()
+
+        if (!hasAnyName || !formData.imageUrl) {
             toast({
-                title: "To'ldirilmagan maydonlar",
-                description: "Iltimos, nom va rasm maydonlarini to'ldiring",
+                title: t("admin.form.errors.incomplete"),
+                description: t("admin.form.errors.bannerRequired") || "Iltimos, nom va rasm maydonlarini to'ldiring",
                 variant: "destructive",
             })
             return
@@ -135,8 +144,12 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
 
         setIsSubmitting(true)
         try {
+            const mainName = (formData.name_uz || formData.name_ru || formData.name_en || formData.name || "").trim()
             const bannerData = {
-                name: formData.name,
+                name: mainName,
+                name_uz: (formData.name_uz || "").trim(),
+                name_ru: (formData.name_ru || "").trim(),
+                name_en: (formData.name_en || "").trim(),
                 imageUrl: formData.imageUrl,
                 categoryId: formData.categoryId === "all" ? null : formData.categoryId,
                 active: formData.active,
@@ -146,8 +159,8 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
             if (banner?.id) {
                 await updateDoc(doc(db, "banners", banner.id), bannerData)
                 toast({
-                    title: "Banner yangilandi",
-                    description: "Muvaffaqiyatli saqlandi",
+                    title: t("admin.banner.updateSuccess") || "Banner yangilandi",
+                    description: t("admin.form.saveSuccess") || "Muvaffaqiyatli saqlandi",
                 })
             } else {
                 await addDoc(collection(db, "banners"), {
@@ -155,8 +168,8 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                     createdAt: new Date(),
                 })
                 toast({
-                    title: "Banner yaratildi",
-                    description: "Yangi banner qo'shildi",
+                    title: t("admin.banner.addSuccess") || "Banner yaratildi",
+                    description: t("admin.banner.addDesc") || "Yangi banner qo'shildi",
                 })
             }
 
@@ -164,8 +177,8 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
         } catch (error) {
             console.error("Error saving banner:", error)
             toast({
-                title: "Xatolik",
-                description: "Saqlashda xatolik yuz berdi",
+                title: t("common.error"),
+                description: t("admin.form.errors.saveError"),
                 variant: "destructive",
             })
         } finally {
@@ -180,7 +193,7 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                     <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <h1 className="text-2xl font-bold text-gray-900">
-                    {banner ? "Bannerni tahrirlash" : "Yangi banner qo'shish"}
+                    {banner ? t("admin.menu.item.edit") : t("admin.banner.addBtn")}
                 </h1>
             </div>
 
@@ -189,7 +202,7 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                 <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
                         <ImageIcon className="w-5 h-5 text-primary" />
-                        Banner Rasmi
+                        {t("admin.form.bannerImage")}
                     </h3>
 
                     <div className="space-y-4">
@@ -199,7 +212,7 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                                 <div className="text-center">
                                     <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
                                     <p className="text-sm text-gray-600 font-medium">
-                                        {isUploadingImage ? "Yuklanmoqda..." : "Tekshirilmoqda..."}
+                                        {isUploadingImage ? t("admin.form.uploading") : t("admin.form.checking")}
                                     </p>
                                 </div>
                             ) : formData.imageUrl && isImageValid ? (
@@ -219,14 +232,14 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                                             className="gap-2"
                                         >
                                             <ImageIcon className="w-4 h-4" />
-                                            Kengaytirish
+                                            {t("admin.form.expand")}
                                         </Button>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="text-center text-gray-400">
                                     <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                    <p className="text-sm font-medium">Rasm yo'q</p>
+                                    <p className="text-sm font-medium">{t("admin.form.noImage")}</p>
                                 </div>
                             )}
                         </div>
@@ -234,7 +247,7 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                         {/* Upload Controls */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="imageUrl">Rasm URL</Label>
+                                <Label htmlFor="imageUrl">{t("admin.form.imageUrl")}</Label>
                                 <Input
                                     id="imageUrl"
                                     name="imageUrl"
@@ -245,7 +258,7 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Fayl yuklash</Label>
+                                <Label>{t("admin.form.imageUpload")}</Label>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -261,7 +274,7 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                                     disabled={isUploadingImage}
                                 >
                                     <Upload className="w-4 h-4 mr-2" />
-                                    {isUploadingImage ? "Yuklanmoqda..." : "Kompyuterdan yuklash"}
+                                    {isUploadingImage ? t("admin.form.uploading") : t("admin.form.uploadFromPC")}
                                 </Button>
                             </div>
                         </div>
@@ -271,57 +284,92 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                 {/* Info Fields */}
                 <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                        Ma'lumotlar
+                        {t("admin.form.basicInfo")}
                     </h3>
 
                     <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Banner Nomi <span className="text-red-500">*</span></Label>
-                            <Input
-                                id="name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                placeholder="Masalan: Yangi yil chegirmalari"
-                                required
-                                className="h-11"
-                            />
-                        </div>
+                        <Tabs defaultValue="uz" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3 mb-4">
+                                <TabsTrigger value="uz">O'zbekcha</TabsTrigger>
+                                <TabsTrigger value="ru" className="flex gap-1">Русский <span className="text-[10px] opacity-60 font-normal lowercase">{t("common.optional")}</span></TabsTrigger>
+                                <TabsTrigger value="en" className="flex gap-1">English <span className="text-[10px] opacity-60 font-normal lowercase">{t("common.optional")}</span></TabsTrigger>
+                            </TabsList>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="categoryId">Kategoriya (Ixtiyoriy)</Label>
-                            <Select
-                                value={formData.categoryId}
-                                onValueChange={(value) => handleSelectChange("categoryId", value)}
-                            >
-                                <SelectTrigger className="h-11">
-                                    <SelectValue placeholder="Kategoriyani tanlang" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Barchasi (Umumiy)</SelectItem>
-                                    {categories.map((cat) => (
-                                        <SelectItem key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <p className="text-xs text-gray-500">
-                                Agar kategoriya tanlansa, banner bosilganda ushbu kategoriya ochiladi.
-                            </p>
-                        </div>
+                            <TabsContent value="uz" className="space-y-4 pt-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name_uz">{t("admin.form.nameUz")} *</Label>
+                                    <Input
+                                        id="name_uz"
+                                        name="name_uz"
+                                        value={formData.name_uz}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Milliy taomlar haftaligi"
+                                    />
+                                </div>
+                            </TabsContent>
 
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <Label htmlFor="active" className="font-medium text-gray-800">Faol holat</Label>
-                                <p className="text-sm text-gray-600">Saytda ko'rinishi</p>
-                            </div>
-                            <Switch
-                                id="active"
-                                checked={formData.active}
-                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, active: checked }))}
-                            />
+                            <TabsContent value="ru" className="space-y-4 pt-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name_ru">{t("admin.form.nameRu")}</Label>
+                                    <Input
+                                        id="name_ru"
+                                        name="name_ru"
+                                        value={formData.name_ru}
+                                        onChange={handleChange}
+                                        placeholder="Неделя национальных блюд"
+                                    />
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="en" className="space-y-4 pt-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name_en">{t("admin.form.nameEn")}</Label>
+                                    <Input
+                                        id="name_en"
+                                        name="name_en"
+                                        value={formData.name_en}
+                                        onChange={handleChange}
+                                        placeholder="National Dishes Week"
+                                    />
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="categoryId">{t("admin.form.category")} ({t("common.optional")})</Label>
+                        <Select
+                            value={formData.categoryId}
+                            onValueChange={(value) => handleSelectChange("categoryId", value)}
+                        >
+                            <SelectTrigger className="h-11">
+                                <SelectValue placeholder={t("admin.form.selectCategory")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t("admin.banner.all")}</SelectItem>
+                                {categories.map((cat) => (
+                                    <SelectItem key={cat.id} value={cat.id}>
+                                        {cat.name_uz || cat.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500">
+                            {t("admin.form.bannerCategoryDesc")}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <Label htmlFor="active" className="font-medium text-gray-800">{t("admin.form.available")}</Label>
+                            <p className="text-sm text-gray-600">{t("admin.form.availableDesc")}</p>
                         </div>
+                        <Switch
+                            id="active"
+                            checked={formData.active}
+                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, active: checked }))}
+                        />
                     </div>
                 </div>
 
@@ -333,7 +381,7 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                         onClick={onCancel}
                         className="px-6 py-2 h-11"
                     >
-                        Bekor qilish
+                        {t("admin.form.cancel")}
                     </Button>
                     <Button
                         type="submit"
@@ -343,40 +391,42 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                Saqlanmoqda...
+                                {t("admin.form.saving")}
                             </>
                         ) : (
                             <>
                                 <Upload className="mr-2 h-5 w-5" />
-                                {banner ? "Yangilash" : "Yaratish"}
+                                {banner ? t("admin.form.update") : t("admin.form.add")}
                             </>
                         )}
                     </Button>
                 </div>
-            </form>
+            </form >
 
             {/* Image Preview Modal */}
-            {showImagePreview && formData.imageUrl && (
-                <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4">
-                    <div className="relative max-w-4xl max-h-full">
-                        <Button
-                            onClick={() => setShowImagePreview(false)}
-                            variant="outline"
-                            size="sm"
-                            className="absolute -top-12 right-0 bg-white/20 text-white border-white/40"
-                        >
-                            <X className="w-4 h-4" />
-                        </Button>
-                        <Image
-                            src={formData.imageUrl}
-                            alt="Banner Full"
-                            width={1000}
-                            height={600}
-                            className="object-contain max-h-[80vh] rounded-lg"
-                        />
+            {
+                showImagePreview && formData.imageUrl && (
+                    <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4">
+                        <div className="relative max-w-4xl max-h-full">
+                            <Button
+                                onClick={() => setShowImagePreview(false)}
+                                variant="outline"
+                                size="sm"
+                                className="absolute -top-12 right-0 bg-white/20 text-white border-white/40"
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                            <Image
+                                src={formData.imageUrl}
+                                alt="Banner Full"
+                                width={1000}
+                                height={600}
+                                className="object-contain max-h-[80vh] rounded-lg"
+                            />
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }

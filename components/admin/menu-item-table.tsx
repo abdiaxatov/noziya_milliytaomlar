@@ -20,6 +20,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency } from "@/lib/utils"
 import { Edit, Trash2 } from "lucide-react"
 import type { MenuItem, Category } from "@/types"
+import { useLanguage } from "@/hooks/use-language"
 
 interface MenuItemTableProps {
   items: MenuItem[]
@@ -31,14 +32,15 @@ export function MenuItemTable({ items, categories, onEdit }: MenuItemTableProps)
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
+  const { t } = useLanguage()
 
   if (items.length === 0) {
-    return <div className="py-8 text-center text-muted-foreground">Menyu elementlari topilmadi</div>
+    return <div className="py-8 text-center text-muted-foreground">{t("admin.menu.table.noItems")}</div>
   }
 
   const getCategoryName = (categoryId: string) => {
     const category = categories.find((c) => c.id === categoryId)
-    return category ? category.name : "Kategoriya topilmadi"
+    return category ? category.name : t("admin.menu.table.categoryNotFound")
   }
 
   const handleDeleteItem = async () => {
@@ -48,14 +50,14 @@ export function MenuItemTable({ items, categories, onEdit }: MenuItemTableProps)
     try {
       await deleteDoc(doc(db, "menuItems", deleteItemId))
       toast({
-        title: "Taom o'chirildi",
-        description: "Menyu elementi muvaffaqiyatli o'chirildi",
+        title: t("admin.menu.table.deleteSuccess"),
+        description: t("admin.menu.table.deleteSuccessDesc"),
       })
     } catch (error) {
       console.error("Error deleting menu item:", error)
       toast({
-        title: "Xatolik",
-        description: "Menyu elementini o'chirishda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.form.errors.saveError"),
         variant: "destructive",
       })
     } finally {
@@ -71,14 +73,14 @@ export function MenuItemTable({ items, categories, onEdit }: MenuItemTableProps)
       })
 
       toast({
-        title: item.isAvailable ? "Taom yashirildi" : "Taom ko'rsatildi",
-        description: item.isAvailable ? "Taom mijozlar uchun yashirildi" : "Taom mijozlar uchun ko'rsatildi",
+        title: item.isAvailable ? t("admin.menu.table.hideSuccess") : t("admin.menu.table.showSuccess"),
+        description: item.isAvailable ? t("admin.menu.table.hideDesc") : t("admin.menu.table.showDesc"),
       })
     } catch (error) {
       console.error("Error updating menu item availability:", error)
       toast({
-        title: "Xatolik",
-        description: "Taom holatini o'zgartirishda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.form.errors.saveError"),
         variant: "destructive",
       })
     }
@@ -106,11 +108,11 @@ export function MenuItemTable({ items, categories, onEdit }: MenuItemTableProps)
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nomi</TableHead>
-                  <TableHead>Narxi</TableHead>
-                  <TableHead>Porsiya</TableHead>
-                  <TableHead>Mavjud</TableHead>
-                  <TableHead className="w-[100px]">Amallar</TableHead>
+                  <TableHead>{t("admin.menu.table.name")}</TableHead>
+                  <TableHead>{t("admin.menu.table.price")}</TableHead>
+                  <TableHead>{t("admin.menu.table.servings")}</TableHead>
+                  <TableHead>{t("admin.menu.table.available")}</TableHead>
+                  <TableHead className="w-[100px]">{t("admin.menu.item.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -118,7 +120,7 @@ export function MenuItemTable({ items, categories, onEdit }: MenuItemTableProps)
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{formatCurrency(item.price)}</TableCell>
-                    <TableCell>{item.servesCount} kishi</TableCell>
+                    <TableCell>{item.servesCount} {t("admin.menu.table.person")}</TableCell>
                     <TableCell>
                       <Switch checked={item.isAvailable} onCheckedChange={() => handleToggleAvailability(item)} />
                     </TableCell>
@@ -148,19 +150,19 @@ export function MenuItemTable({ items, categories, onEdit }: MenuItemTableProps)
       <AlertDialog open={!!deleteItemId} onOpenChange={(open) => !open && setDeleteItemId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Taomni o'chirishni tasdiqlaysizmi?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.menu.table.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu amal qaytarib bo'lmaydi. Bu taom menyu ro'yxatidan butunlay o'chiriladi.
+              {t("admin.menu.table.deleteDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t("admin.form.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteItem}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "O'chirilmoqda..." : "O'chirish"}
+              {isDeleting ? t("admin.menu.table.deleting") : t("admin.menu.item.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { optimizeImage } from "@/lib/image-optimizer";
 import { PriceDisplay } from "@/components/price-display";
 import { DiscountTimer } from "@/components/discount-timer";
+import { useLanguage } from "@/hooks/use-language";
+import { getLocalizedName } from "@/lib/localization";
 import type { MenuItem as MenuItemType } from "@/types";
 
 interface MenuItemProps {
@@ -27,6 +29,7 @@ export const MenuItemComponent = React.memo(function MenuItemComponent({
 }: MenuItemProps) {
   const router = useRouter();
   const [is3DLoading, setIs3DLoading] = useState(false);
+  const { t, language } = useLanguage();
 
   // Memoize CDN URL to prevent recalculation
   const optimizedUrl = useMemo(
@@ -71,7 +74,7 @@ export const MenuItemComponent = React.memo(function MenuItemComponent({
       >
         <Image
           src={optimizedUrl}
-          alt={item.name}
+          alt={getLocalizedName(item, language)}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
@@ -82,7 +85,7 @@ export const MenuItemComponent = React.memo(function MenuItemComponent({
 
         {isOutOfStock ? (
           <Badge className="absolute left-1.5 top-1.5 bg-red-500 text-white text-[10px] py-0.5 px-1.5">
-            Все кончено.
+            {t("menu.outOfStock")}
           </Badge>
         ) : (
           !isOutOfStock &&
@@ -99,7 +102,7 @@ export const MenuItemComponent = React.memo(function MenuItemComponent({
       </div>
 
       <CardContent className="p-2">
-        <h3 className="font-medium text-sm mb-1 line-clamp-1">{item.name}</h3>
+        <h3 className="font-medium text-sm mb-1 line-clamp-1">{getLocalizedName(item, language)}</h3>
         <PriceDisplay
           price={item.price}
           discountPrice={
@@ -120,7 +123,7 @@ export const MenuItemComponent = React.memo(function MenuItemComponent({
             size="sm"
             variant="outline"
           >
-            Все кончено.
+            {t("menu.outOfStock")}
           </Button>
         ) : item.modelUrl ? (
           <Button
@@ -133,12 +136,12 @@ export const MenuItemComponent = React.memo(function MenuItemComponent({
             {is3DLoading ? (
               <>
                 <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                Загрузка...
+                {t("common.loading")}
               </>
             ) : (
               <>
                 <Eye className="mr-1 h-3 w-3" />
-                3D-модель
+                {t("menu.view3d")}
               </>
             )}
           </Button>

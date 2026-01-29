@@ -1,7 +1,13 @@
 export interface MenuItem {
   id: string;
-  name: string;
+  name: string; // Default name (usually Uzbek)
+  name_uz?: string;
+  name_ru?: string;
+  name_en?: string;
   description?: string;
+  description_uz?: string;
+  description_ru?: string;
+  description_en?: string;
   price: number;
   category: string;
   imageUrl?: string;
@@ -28,7 +34,13 @@ export interface CartItem {
 export interface Category {
   id: string;
   name: string;
+  name_uz?: string;
+  name_ru?: string;
+  name_en?: string;
   description?: string;
+  description_uz?: string;
+  description_ru?: string;
+  description_en?: string;
   imageUrl?: string;
   order?: number;
   active?: boolean;
@@ -97,6 +109,9 @@ export interface Floor {
 export interface Banner {
   id: string;
   name: string;
+  name_uz?: string;
+  name_ru?: string;
+  name_en?: string;
   imageUrl: string;
   categoryId?: string;
   active: boolean; // default true

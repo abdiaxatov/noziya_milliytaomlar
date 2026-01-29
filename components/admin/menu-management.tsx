@@ -37,6 +37,9 @@ import {
 } from "@/components/ui/drawer"
 import { useRouter } from "next/navigation"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { useLanguage } from "@/hooks/use-language"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { getLocalizedName, getLocalizedDescription } from "@/lib/localization"
 
 export function MenuManagement() {
   const router = useRouter()
@@ -57,6 +60,7 @@ export function MenuManagement() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
 
   const { toast } = useToast()
+  const { t, language } = useLanguage()
 
   // Navigation handlers for drawer
   const handleNext = () => {
@@ -97,8 +101,8 @@ export function MenuManagement() {
       (error) => {
         console.error("Error fetching categories:", error)
         toast({
-          title: "Xatolik",
-          description: "Kategoriyalarni yuklashda xatolik yuz berdi.",
+          title: t("common.error"),
+          description: t("admin.category.error"),
           variant: "destructive",
         })
       }
@@ -124,8 +128,8 @@ export function MenuManagement() {
       (error) => {
         console.error("Error fetching menu items:", error)
         toast({
-          title: "Xatolik",
-          description: "Menyu elementlarini yuklashda xatolik yuz berdi.",
+          title: t("common.error"),
+          description: t("admin.menu.error"),
           variant: "destructive",
         })
         setIsLoading(false)
@@ -144,8 +148,8 @@ export function MenuManagement() {
     if (searchQuery) {
       filtered = filtered.filter(
         (item) =>
-          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description.toLowerCase().includes(searchQuery.toLowerCase())
+          getLocalizedName(item, language).toLowerCase().includes(searchQuery.toLowerCase()) ||
+          getLocalizedDescription(item, language).toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
@@ -184,15 +188,15 @@ export function MenuManagement() {
     try {
       await deleteDoc(doc(db, "menuItems", itemToDelete.id))
       toast({
-        title: "O'chirildi",
-        description: `${itemToDelete.name} muvaffaqiyatli o'chirildi`,
+        title: t("admin.menu.item.delete"),
+        description: `${itemToDelete.name} ${t("admin.menu.item.deleteSuccess") || "muvaffaqiyatli o'chirildi"}`,
       })
       setIsDeleteDialogOpen(false)
     } catch (error) {
       console.error("Error deleting menu item:", error)
       toast({
-        title: "Xatolik",
-        description: "O'chirishda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.menu.deleteError") || "O'chirishda xatolik yuz berdi",
         variant: "destructive",
       })
     } finally {
@@ -202,7 +206,7 @@ export function MenuManagement() {
 
   const getCategoryName = (categoryId: string) => {
     const category = categories.find((c) => c.id === categoryId)
-    return category ? category.name : "Kategoriya topilmadi"
+    return category ? getLocalizedName(category, language) : t("common.noCategories")
   }
 
   return (
@@ -212,11 +216,12 @@ export function MenuManagement() {
         {/* Sticky Header */}
         <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border/50 px-4 py-3 shadow-sm transition-all">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900">Boshqaruv Paneli</h1>
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900">{t("admin.menu.title")}</h1>
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
               <Button onClick={handleAddItem} size="sm" className="shadow-md bg-primary hover:bg-primary/90 text-white rounded-full px-4">
                 <Plus className="mr-1 h-4 w-4" />
-                Qo'shish
+                {t("admin.menu.addItem")}
               </Button>
             </div>
           </div>
@@ -225,9 +230,9 @@ export function MenuManagement() {
         <Tabs defaultValue="menu-items" className="space-y-6 px-2 md:px-0">
           <div className="px-2">
             <TabsList className="w-full bg-white/50 border shadow-sm p-1 rounded-xl grid grid-cols-3">
-              <TabsTrigger value="menu-items" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Menyu</TabsTrigger>
-              <TabsTrigger value="categories" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Kategoriyalar</TabsTrigger>
-              <TabsTrigger value="banners" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Bannerlar</TabsTrigger>
+              <TabsTrigger value="menu-items" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">{t("admin.menu.tabs.menu")}</TabsTrigger>
+              <TabsTrigger value="categories" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">{t("admin.menu.tabs.categories")}</TabsTrigger>
+              <TabsTrigger value="banners" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">{t("admin.menu.tabs.banners")}</TabsTrigger>
             </TabsList>
           </div>
 
@@ -239,7 +244,7 @@ export function MenuManagement() {
                   <UtensilsCrossed className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Jami Taomlar</p>
+                  <p className="text-xs font-medium text-muted-foreground">{t("admin.menu.stats.totalItems")}</p>
                   <h3 className="text-xl font-bold">{stats.totalItems}</h3>
                 </div>
               </CardContent>
@@ -250,7 +255,7 @@ export function MenuManagement() {
                   <AlertCircle className="w-5 h-5 text-orange-500" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Stop List</p>
+                  <p className="text-xs font-medium text-muted-foreground">{t("admin.menu.stats.stopList")}</p>
                   <h3 className="text-xl font-bold">{stats.outOfStock}</h3>
                 </div>
               </CardContent>
@@ -261,7 +266,7 @@ export function MenuManagement() {
                   <LayoutGrid className="w-5 h-5 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Kategoriyalar</p>
+                  <p className="text-xs font-medium text-muted-foreground">{t("admin.menu.stats.categories")}</p>
                   <h3 className="text-xl font-bold">{stats.totalCategories}</h3>
                 </div>
               </CardContent>
@@ -275,7 +280,7 @@ export function MenuManagement() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
-                    placeholder="Qidirish..."
+                    placeholder={t("admin.menu.toolbar.search")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 bg-gray-50 border-gray-200 focus:bg-white transition-all w-full"
@@ -312,7 +317,7 @@ export function MenuManagement() {
                     onClick={() => setCategoryFilter("all")}
                     className={`rounded-full px-4 transition-all ${categoryFilter === "all" || !categoryFilter ? "bg-primary text-white shadow-md" : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-gray-900 border-gray-200"}`}
                   >
-                    Barchasi
+                    {t("common.all")}
                   </Button>
                   {categories.map((category) => (
                     <Button
@@ -322,7 +327,7 @@ export function MenuManagement() {
                       onClick={() => setCategoryFilter(category.id)}
                       className={`rounded-full px-4 transition-all ${categoryFilter === category.id ? "bg-primary text-white shadow-md" : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-gray-900 border-gray-200"}`}
                     >
-                      {category.name}
+                      {getLocalizedName(category, language)}
                     </Button>
                   ))}
                 </div>
@@ -338,14 +343,14 @@ export function MenuManagement() {
             ) : filteredItems.length === 0 ? (
               <div className="rounded-xl border-2 border-dashed border-gray-200 p-12 text-center bg-white/50">
                 <UtensilsCrossed className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                <h3 className="text-lg font-medium text-gray-900">Ushbu kategoriyada taomlar mavjud emas</h3>
-                <p className="text-gray-500 mb-4">Filtrni tozalash uchun quyidagi tugmani bosing</p>
+                <h3 className="text-lg font-medium text-gray-900">{t("admin.menu.empty.title")}</h3>
+                <p className="text-gray-500 mb-4">{t("admin.menu.empty.desc")}</p>
                 <Button
                   variant="outline"
                   onClick={() => setCategoryFilter("all")}
                   className="mt-2"
                 >
-                  Filtrni tozalash
+                  {t("admin.menu.empty.clear")}
                 </Button>
               </div>
             ) : (
@@ -361,7 +366,7 @@ export function MenuManagement() {
                           {item.imageUrl ? (
                             <Image
                               src={optimizeImage(item.imageUrl, 400)}
-                              alt={item.name}
+                              alt={getLocalizedName(item, language)}
                               fill
                               className="object-cover transition-transform duration-500 group-hover:scale-110"
                               loading={index < 8 ? "eager" : "lazy"}
@@ -393,7 +398,7 @@ export function MenuManagement() {
 
                           <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end translate-y-0 md:translate-y-4 group-hover:translate-y-0 transition-transform duration-300 z-10">
                             <Badge variant={item.isAvailable ? "default" : "destructive"} className="shadow-sm text-[10px] px-1.5 h-5">
-                              {item.isAvailable ? "Mavjud" : "Stop"}
+                              {item.isAvailable ? t("admin.menu.item.available") : t("admin.menu.item.stop")}
                             </Badge>
                             <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
                               <PriceDisplay
@@ -407,7 +412,7 @@ export function MenuManagement() {
                         <CardContent className="p-3">
                           <div className="flex justify-between items-start mb-1 h-8">
                             <div className="w-full">
-                              <h3 className="font-semibold text-gray-900 line-clamp-1 text-sm leading-tight" title={item.name}>{item.name}</h3>
+                              <h3 className="font-semibold text-gray-900 line-clamp-1 text-sm leading-tight" title={getLocalizedName(item, language)}>{getLocalizedName(item, language)}</h3>
                               <p className="text-[10px] text-muted-foreground line-clamp-1">{getCategoryName(item.categoryId)}</p>
                             </div>
                           </div>
@@ -423,9 +428,9 @@ export function MenuManagement() {
                           <TableHead className="w-[80px]">Rasm</TableHead>
                           <TableHead>Nomi</TableHead>
                           <TableHead>Kategoriya</TableHead>
-                          <TableHead>Narxi</TableHead>
-                          <TableHead>Holati</TableHead>
-                          <TableHead className="text-right">Amallar</TableHead>
+                          <TableHead>{t("menu.price")}</TableHead>
+                          <TableHead>{t("admin.menu.item.available")}</TableHead>
+                          <TableHead className="text-right">{t("admin.menu.item.actions") || "Amallar"}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -434,7 +439,7 @@ export function MenuManagement() {
                             <TableCell>
                               <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-gray-100">
                                 {item.imageUrl ? (
-                                  <Image src={optimizeImage(item.imageUrl, 100)} alt={item.name} fill className="object-cover" />
+                                  <Image src={optimizeImage(item.imageUrl, 100)} alt={getLocalizedName(item, language)} fill className="object-cover" />
                                 ) : (
                                   <div className="flex h-full items-center justify-center text-gray-400">
                                     <UtensilsCrossed className="h-4 w-4" />
@@ -443,8 +448,8 @@ export function MenuManagement() {
                               </div>
                             </TableCell>
                             <TableCell className="font-medium">
-                              <div>{item.name}</div>
-                              <div className="text-xs text-muted-foreground line-clamp-1 max-w-[200px]">{item.description}</div>
+                              <div>{getLocalizedName(item, language)}</div>
+                              <div className="text-xs text-muted-foreground line-clamp-1 max-w-[200px]">{getLocalizedDescription(item, language)}</div>
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="font-normal">
@@ -459,7 +464,7 @@ export function MenuManagement() {
                             </TableCell>
                             <TableCell>
                               <Badge variant={item.isAvailable ? "default" : "secondary"} className={!item.isAvailable ? "bg-gray-200 text-gray-500 hover:bg-gray-200" : ""}>
-                                {item.isAvailable ? "Mavjud" : "Stop"}
+                                {item.isAvailable ? t("admin.menu.item.available") : t("admin.menu.item.stop")}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right">
@@ -506,7 +511,7 @@ export function MenuManagement() {
         {/* Create Item Drawer */}
         <Drawer open={isCreateDrawerOpen} onOpenChange={setIsCreateDrawerOpen}>
           <DrawerContent className="max-h-[96vh] h-full rounded-t-[30px] border-0 outline-none flex flex-col bg-gray-50/95 backdrop-blur-sm">
-            <DrawerTitle className="sr-only">Yangi taom qo'shish</DrawerTitle>
+            <DrawerTitle className="sr-only">{t("admin.menu.addItem")}</DrawerTitle>
             <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24">
               <MenuItemForm
                 categories={categories}
@@ -520,7 +525,7 @@ export function MenuManagement() {
         {/* Edit Item Drawer */}
         <Drawer open={isEditDrawerOpen} onOpenChange={setIsEditDrawerOpen}>
           <DrawerContent className="max-h-[96vh] h-full rounded-t-[30px] border-0 outline-none flex flex-col bg-gray-50/95 backdrop-blur-sm">
-            <DrawerTitle className="sr-only">Taomni tahrirlash</DrawerTitle>
+            <DrawerTitle className="sr-only">{t("admin.menu.item.edit")}</DrawerTitle>
             <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24">
               {editingItem && (
                 <MenuItemForm
@@ -538,18 +543,18 @@ export function MenuManagement() {
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>O'chirishni tasdiqlaysizmi?</DialogTitle>
+              <DialogTitle>{t("admin.menu.item.deleteTitle")}</DialogTitle>
               <DialogDescription>
-                Haqiqatan ham <b>{itemToDelete?.name}</b> ni o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi.
+                {t("admin.menu.item.deleteDesc")} <b>{itemToDelete?.name}</b>?
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="gap-2 sm:gap-0">
               <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>
-                Bekor qilish
+                {t("admin.form.cancel")}
               </Button>
               <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
                 {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                O'chirish
+                {t("admin.menu.item.delete")}
               </Button>
             </DialogFooter>
           </DialogContent>

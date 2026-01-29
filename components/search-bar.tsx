@@ -5,6 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
+import { useLanguage } from "@/hooks/use-language";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -12,6 +13,7 @@ interface SearchBarProps {
 
 export function SearchBar({ onSearch }: SearchBarProps) {
   const [query, setQuery] = useState("");
+  const { t } = useLanguage();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -30,7 +32,7 @@ export function SearchBar({ onSearch }: SearchBarProps) {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="Поиск блюд..."
+          placeholder={t("menu.searchPlaceholder")}
           className="pl-10 pr-10"
           value={query}
           onChange={handleChange}

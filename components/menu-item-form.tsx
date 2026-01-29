@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2, ImageIcon, CuboidIcon as Cube, X, Plus, Upload, AlertTriangle, ChevronLeft } from "lucide-react"
@@ -17,6 +18,7 @@ import type { MenuItem, Category } from "@/types"
 import { uploadToGitHub } from "@/lib/github-upload"
 import EmbeddedModelViewer from "@/components/embedded-3d-viewer"
 import { useRouter } from "next/navigation"
+import { useLanguage } from "@/hooks/use-language"
 
 interface MenuItemFormProps {
   item?: MenuItem | null
@@ -29,9 +31,15 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
   const router = useRouter()
   const [formData, setFormData] = useState({
     name: item?.name || "",
+    name_uz: item?.name_uz || "",
+    name_ru: item?.name_ru || "",
+    name_en: item?.name_en || "",
     price: item?.price ? item.price.toString() : "",
     categoryId: item?.categoryId || "",
     description: item?.description || "",
+    description_uz: item?.description_uz || "",
+    description_ru: item?.description_ru || "",
+    description_en: item?.description_en || "",
     imageUrl: item?.imageUrl || "",
     modelUrl: item?.modelUrl || "",
     servesCount: item?.servesCount ? item.servesCount.toString() : "1",
@@ -52,12 +60,15 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [showImagePreview, setShowImagePreview] = useState(false)
   const [modelUrlError, setModelUrlError] = useState<string | null>(null)
-  const [imageFileName, setImageFileName] = useState("Hech qanday fayl tanlanmagan")
-  const [modelFileName, setModelFileName] = useState("Hech qanday fayl tanlanmagan")
+
+  const { toast } = useToast()
+  const { t } = useLanguage()
+
+  const [imageFileName, setImageFileName] = useState(t("admin.form.fileNotSelected"))
+  const [modelFileName, setModelFileName] = useState(t("admin.form.fileNotSelected"))
 
   const imageInputRef = useRef<HTMLInputElement>(null)
   const modelInputRef = useRef<HTMLInputElement>(null)
-  const { toast } = useToast()
 
   const handleCancel = () => {
     if (onCancel) {
@@ -78,7 +89,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
       const urlObj = new URL(url)
       const pathname = urlObj.pathname.toLowerCase()
       if (!pathname.endsWith(".glb") && !pathname.endsWith(".gltf")) {
-        setModelUrlError("URL .glb yoki .gltf fayl bilan tugashi kerak")
+        setModelUrlError(t("admin.form.errors.modelFormat"))
         return
       }
 
@@ -95,26 +106,26 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
         clearTimeout(timeoutId)
 
         if (!response.ok) {
-          setModelUrlError(`Server xatolik: ${response.status}`)
+          setModelUrlError(`${t("admin.form.errors.serverError")}: ${response.status}`)
           return
         }
 
         const contentType = response.headers.get("content-type")
         if (contentType && (contentType.includes("text/html") || contentType.includes("application/json"))) {
-          setModelUrlError("URL HTML sahifa qaytarmoqda, 3D model emas")
+          setModelUrlError(t("admin.form.errors.notModel"))
           return
         }
 
         setModelUrlError(null)
       } catch (fetchError: any) {
         if (fetchError.name === "AbortError") {
-          setModelUrlError("URL ga ulanish vaqti tugadi")
+          setModelUrlError(t("admin.form.errors.timeout"))
         } else {
-          setModelUrlError("URL ga ulanib bo'lmadi")
+          setModelUrlError(t("admin.form.errors.connection"))
         }
       }
     } catch {
-      setModelUrlError("Noto'g'ri URL format")
+      setModelUrlError(t("admin.form.errors.invalidUrl"))
     }
   }
 
@@ -145,7 +156,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
       if (formData.modelUrl) {
         validateModelUrl(formData.modelUrl).catch((error) => {
           console.warn("Model URL validation error:", error)
-          setModelUrlError("URL tekshirishda xatolik")
+          setModelUrlError(t("admin.form.errors.checkError"))
         })
       }
     }, 1000) // 1 second debounce
@@ -175,14 +186,14 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
         uploadModelFile(file)
       } else {
         toast({
-          title: "Noto'g'ri fayl formati",
-          description: "Faqat .glb yoki .gltf formatdagi fayllar qabul qilinadi",
+          title: t("admin.form.errors.invalidFormat"),
+          description: t("admin.form.errors.modelDesc"),
           variant: "destructive",
         })
-        setModelFileName("Hech qanday fayl tanlanmagan")
+        setModelFileName(t("admin.form.fileNotSelected"))
       }
     } else {
-      setModelFileName("Hech qanday fayl tanlanmagan")
+      setModelFileName(t("admin.form.fileNotSelected"))
     }
   }
 
@@ -195,14 +206,14 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
         uploadImageFile(file)
       } else {
         toast({
-          title: "Noto'g'ri fayl formati",
-          description: "Faqat rasm fayllar qabul qilinadi",
+          title: t("admin.form.errors.invalidFormat"),
+          description: t("admin.form.errors.imageDesc"),
           variant: "destructive",
         })
-        setImageFileName("Hech qanday fayl tanlanmagan")
+        setImageFileName(t("admin.form.fileNotSelected"))
       }
     } else {
-      setImageFileName("Hech qanday fayl tanlanmagan")
+      setImageFileName(t("admin.form.fileNotSelected"))
     }
   }
 
@@ -216,21 +227,21 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
         setFormData((prev) => ({ ...prev, modelUrl: result.url }))
         setModelFile(null)
         toast({
-          title: "3D model yuklandi",
-          description: "Model muvaffaqiyatli GitHub'ga yuklandi",
+          title: t("admin.form.modelUploaded"),
+          description: t("admin.form.modelUploadedDesc"),
         })
       } else {
         toast({
-          title: "Yuklashda xatolik",
-          description: result.error || "Model yuklanmadi",
+          title: t("admin.form.errors.uploadError"),
+          description: result.error || t("admin.form.errors.modelNotUploaded"),
           variant: "destructive",
         })
       }
     } catch (error) {
       console.warn("Model upload error:", error)
       toast({
-        title: "Xatolik",
-        description: "Model yuklashda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.form.errors.modelUploadError"),
         variant: "destructive",
       })
     } finally {
@@ -248,21 +259,21 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
         setFormData((prev) => ({ ...prev, imageUrl: result.url }))
         setImageFile(null)
         toast({
-          title: "Rasm yuklandi",
-          description: "Rasm muvaffaqiyatli GitHub'ga yuklandi",
+          title: t("admin.form.imageUploaded"),
+          description: t("admin.form.imageUploadedDesc"),
         })
       } else {
         toast({
-          title: "Yuklashda xatolik",
-          description: result.error || "Rasm yuklanmadi",
+          title: t("admin.form.errors.uploadError"),
+          description: result.error || t("admin.form.errors.imageNotUploaded"),
           variant: "destructive",
         })
       }
     } catch (error) {
       console.warn("Image upload error:", error)
       toast({
-        title: "Xatolik",
-        description: "Rasm yuklashda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.form.errors.imageUploadError"),
         variant: "destructive",
       })
     } finally {
@@ -272,10 +283,12 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name || !formData.price || !formData.categoryId) {
+    const hasAnyName = formData.name_uz.trim() || formData.name_ru.trim() || formData.name_en.trim() || formData.name.trim()
+
+    if (!hasAnyName || !formData.price || !formData.categoryId) {
       toast({
-        title: "To'ldirilmagan maydonlar",
-        description: "Iltimos, barcha majburiy maydonlarni to'ldiring",
+        title: t("admin.form.errors.incomplete"),
+        description: t("admin.form.errors.fillRequired"),
         variant: "destructive",
       })
       return
@@ -283,7 +296,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
 
     if (modelUrlError) {
       toast({
-        title: "Model URL xatolik",
+        title: t("admin.form.errors.modelUrlError"),
         description: modelUrlError,
         variant: "destructive",
       })
@@ -292,11 +305,18 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
 
     setIsSubmitting(true)
     try {
+      const mainName = (formData.name_uz || formData.name_ru || formData.name_en || formData.name).trim()
       const menuItemData = {
-        name: formData.name,
+        name: mainName,
+        name_uz: formData.name_uz.trim(),
+        name_ru: formData.name_ru.trim(),
+        name_en: formData.name_en.trim(),
         price: Number(formData.price),
         categoryId: formData.categoryId,
-        description: formData.description,
+        description: formData.description_uz || formData.description_ru || formData.description_en || formData.description,
+        description_uz: formData.description_uz.trim(),
+        description_ru: formData.description_ru.trim(),
+        description_en: formData.description_en.trim(),
         imageUrl: formData.imageUrl || null,
         modelUrl: formData.modelUrl || null,
         servesCount: Number(formData.servesCount) || 1,
@@ -311,14 +331,14 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
       if (item?.id) {
         await updateDoc(doc(db, "menuItems", item.id), menuItemData)
         toast({
-          title: "Taom yangilandi",
-          description: `${formData.name} muvaffaqiyatli yangilandi`,
+          title: t("admin.form.itemUpdated"),
+          description: `${formData.name} ${t("admin.form.itemUpdatedDesc")}`,
         })
       } else {
         await addDoc(collection(db, "menuItems"), menuItemData)
         toast({
-          title: "Taom qo'shildi",
-          description: `${formData.name} menyuga qo'shildi`,
+          title: t("admin.form.itemAdded"),
+          description: `${formData.name} ${t("admin.form.itemAddedDesc")}`,
         })
         const audio = new Audio("/success.mp3")
         audio.play().catch((e) => console.warn("Audio play failed:", e))
@@ -332,8 +352,8 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
     } catch (error) {
       console.warn("Error saving menu item:", error)
       toast({
-        title: "Xatolik",
-        description: "Taomni saqlashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+        title: t("common.error"),
+        description: t("admin.form.errors.saveError"),
         variant: "destructive",
       })
     } finally {
@@ -348,7 +368,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold text-gray-900">
-          {item ? "Taomni tahrirlash" : "Yangi taom qo'shish"}
+          {item ? t("admin.form.editItem") : t("admin.form.addItem")}
         </h1>
       </div>
 
@@ -357,7 +377,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
         <div className="bg-gradient-to-br bg-primary/10 rounded-2xl p-6 border border-slate-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            Jonli ko'rinish
+            {t("admin.form.livePreview")}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -365,7 +385,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
             <div className="space-y-3">
               <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-green-600" />
-                Rasm
+                {t("admin.form.image")}
               </Label>
               <div className="relative h-48 bg-white rounded-xl border-2 border-dashed border-gray-300 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 {isCheckingImage || isUploadingImage ? (
@@ -373,14 +393,14 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                     <div className="text-center">
                       <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
                       <p className="text-sm text-gray-600 font-medium">
-                        {isUploadingImage ? "Rasm yuklanmoqda..." : "Tekshirilmoqda..."}
+                        {isUploadingImage ? t("admin.form.uploading") : t("admin.form.checking")}
                       </p>
                     </div>
                   </div>
                 ) : formData.imageUrl && isImageValid ? (
                   <Image
                     src={formData.imageUrl || "/placeholder.svg"}
-                    alt="Taom rasmi"
+                    alt={t("admin.form.image")}
                     fill
                     className="object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
                     onClick={() => setShowImagePreview(true)}
@@ -389,8 +409,8 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center text-primary">
                       <ImageIcon className="w-12 h-12 mx-auto mb-3" />
-                      <p className="text-sm font-medium">Rasm ko'rinishi</p>
-                      <p className="text-xs">Rasm yuklang yoki URL kiriting</p>
+                      <p className="text-sm font-medium">{t("admin.form.imagePreview")}</p>
+                      <p className="text-xs">{t("admin.form.imagePreviewDesc")}</p>
                     </div>
                   </div>
                 )}
@@ -405,7 +425,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                 {modelUrlError && (
                   <span className="text-xs text-red-500 bg-red-100 px-2 py-1 rounded-full flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" />
-                    Xatolik
+                    {t("common.error")}
                   </span>
                 )}
               </Label>
@@ -414,7 +434,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                   <div className="absolute inset-0 flex items-center justify-center bg-white/90">
                     <div className="text-center">
                       <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
-                      <p className="text-sm text-gray-600 font-medium">3D model yuklanmoqda...</p>
+                      <p className="text-sm text-gray-600 font-medium">{t("admin.form.modelUploading")}</p>
                     </div>
                   </div>
                 ) : (
@@ -425,7 +445,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                 <div className="text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
                   <div className="flex items-center gap-2 font-medium mb-1">
                     <AlertTriangle className="w-3 h-3" />
-                    URL xatolik
+                    {t("admin.form.errors.modelUrlError")}
                   </div>
                   <p>{modelUrlError}</p>
                 </div>
@@ -440,28 +460,112 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
           <div className="space-y-6">
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                Asosiy ma'lumotlar
+                {t("admin.form.basicInfo")}
               </h3>
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                    Taom nomi <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Masalan: Osh, Manti, Lag'mon"
-                    className="h-11 border-2 border-gray-200 focus:border-primary rounded-lg"
-                  />
-                </div>
+                <Tabs defaultValue="uz" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-4">
+                    <TabsTrigger value="uz">O'zbekcha</TabsTrigger>
+                    <TabsTrigger value="ru" className="flex gap-1">Русский <span className="text-[10px] opacity-60 font-normal lowercase">{t("common.optional")}</span></TabsTrigger>
+                    <TabsTrigger value="en" className="flex gap-1">English <span className="text-[10px] opacity-60 font-normal lowercase">{t("common.optional")}</span></TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="uz" className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="name_uz" className="text-sm font-medium text-gray-700">
+                        {t("admin.form.nameUz")} <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="name_uz"
+                        name="name_uz"
+                        value={formData.name_uz}
+                        onChange={handleChange}
+                        required
+                        placeholder={t("admin.form.itemNamePlaceholder")}
+                        className="h-11 border-2 border-gray-200 focus:border-primary rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description_uz" className="text-sm font-medium text-gray-700">
+                        {t("admin.form.descUz")}
+                      </Label>
+                      <Textarea
+                        id="description_uz"
+                        name="description_uz"
+                        value={formData.description_uz}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder={t("admin.form.itemDescPlaceholder")}
+                        className="border-2 border-gray-200 focus:border-primary rounded-lg resize-none"
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="ru" className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="name_ru" className="text-sm font-medium text-gray-700">
+                        {t("admin.form.nameRu")}
+                      </Label>
+                      <Input
+                        id="name_ru"
+                        name="name_ru"
+                        value={formData.name_ru}
+                        onChange={handleChange}
+                        placeholder="Плов"
+                        className="h-11 border-2 border-gray-200 focus:border-primary rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description_ru" className="text-sm font-medium text-gray-700">
+                        {t("admin.form.descRu")}
+                      </Label>
+                      <Textarea
+                        id="description_ru"
+                        name="description_ru"
+                        value={formData.description_ru}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder="О составе и приготовлении..."
+                        className="border-2 border-gray-200 focus:border-primary rounded-lg resize-none"
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="en" className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="name_en" className="text-sm font-medium text-gray-700">
+                        {t("admin.form.nameEn")}
+                      </Label>
+                      <Input
+                        id="name_en"
+                        name="name_en"
+                        value={formData.name_en}
+                        onChange={handleChange}
+                        placeholder="Plov"
+                        className="h-11 border-2 border-gray-200 focus:border-primary rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description_en" className="text-sm font-medium text-gray-700">
+                        {t("admin.form.descEn")}
+                      </Label>
+                      <Textarea
+                        id="description_en"
+                        name="description_en"
+                        value={formData.description_en}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder="About ingredients..."
+                        className="border-2 border-gray-200 focus:border-primary rounded-lg resize-none"
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="price" className="text-sm font-medium text-gray-700">
-                      Narxi (сум) <span className="text-red-500">*</span>
+                      {t("admin.form.price")} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="price"
@@ -476,7 +580,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="servesCount" className="text-sm font-medium text-gray-700">
-                      Porsiya miqdori
+                      {t("admin.form.servesCount")}
                     </Label>
                     <Input
                       id="servesCount"
@@ -493,38 +597,23 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
 
                 <div className="space-y-2">
                   <Label htmlFor="categoryId" className="text-sm font-medium text-gray-700">
-                    Kategoriya <span className="text-red-500">*</span>
+                    {t("admin.form.category")} <span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={formData.categoryId}
                     onValueChange={(value) => handleSelectChange("categoryId", value)}
                   >
                     <SelectTrigger className="h-11 border-2 border-gray-200 focus:border-primary rounded-lg">
-                      <SelectValue placeholder="Kategoriyani tanlang" />
+                      <SelectValue placeholder={t("admin.form.selectCategory")} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                          {category.name_uz || category.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                    Tavsif
-                  </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows={3}
-                    placeholder="Taom haqida qisqacha ma'lumot..."
-                    className="border-2 border-gray-200 focus:border-primary rounded-lg resize-none"
-                  />
                 </div>
               </div>
             </div>
@@ -534,7 +623,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
               <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs font-bold">%</span>
-                  Chegirma
+                  {t("admin.form.discount")}
                 </h3>
                 <Switch
                   checked={formData.enableDiscount}
@@ -557,7 +646,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                 <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                   <div className="space-y-2">
                     <Label htmlFor="discountPrice" className="text-sm font-medium text-gray-700">
-                      Chegirma narxi (yangi narx) <span className="text-red-500">*</span>
+                      {t("admin.form.discountPrice")} <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Input
@@ -576,14 +665,14 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                     </div>
                     {Number(formData.discountPrice) >= Number(formData.price) && (
                       <p className="text-xs text-red-500 font-medium">
-                        Chegirma narxi asl narxdan past bo'lishi kerak!
+                        {t("admin.form.errors.discountGreater")}
                       </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="discountEndsAt" className="text-sm font-medium text-gray-700">
-                      Tugash vaqti (Muddat) <span className="text-red-500">*</span>
+                      {t("admin.form.discountEndsAt")} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="discountEndsAt"
@@ -594,7 +683,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                       className="h-11 border-2 border-gray-200 focus:border-red-500 rounded-lg"
                     />
                     <p className="text-xs text-gray-500">
-                      Ushbu vaqtda chegirma avtomatik o'chadi.
+                      {t("admin.form.discountEndsAtDesc")}
                     </p>
                   </div>
                 </div>
@@ -603,14 +692,14 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
 
             {/* Settings */}
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">Sozlamalar</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">{t("admin.form.settings")}</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
                     <Label htmlFor="isAvailable" className="font-medium text-gray-800">
-                      Mavjud
+                      {t("admin.form.available")}
                     </Label>
-                    <p className="text-sm text-gray-600">Mijozlar ko'rishi mumkin</p>
+                    <p className="text-sm text-gray-600">{t("admin.form.availableDesc")}</p>
                   </div>
                   <Switch
                     id="isAvailable"
@@ -625,7 +714,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                       <Label htmlFor="needsContainer" className="font-medium text-gray-800">
                         Bir martalik idish
                       </Label>
-                      <p className="text-sm text-gray-600">Qo'shimcha idish kerakmi?</p>
+                      <p className="text-sm text-gray-600">{t("admin.form.needsContainerDesc")}</p>
                     </div>
                     <Switch
                       id="needsContainer"
@@ -637,7 +726,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                   {formData.needsContainer && (
                     <div className="ml-4 space-y-2">
                       <Label htmlFor="containerPrice" className="text-sm font-medium text-gray-700">
-                        Idish narxi (сум)
+                        {t("admin.form.containerPrice")}
                       </Label>
                       <Input
                         id="containerPrice"
@@ -661,12 +750,12 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-green-600" />
-                Rasm yuklash
+                {t("admin.form.imageUpload")}
               </h3>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
-                    Rasm URL manzili
+                    {t("admin.form.imageUrl")}
                   </Label>
                   <Input
                     id="imageUrl"
@@ -683,13 +772,13 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                     <div className="w-full border-t border-gray-300" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-3 bg-white text-gray-500">yoki</span>
+                    <span className="px-3 bg-white text-gray-500">{t("admin.form.or")}</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="imageFile" className="text-sm font-medium text-gray-700">
-                    Fayl yuklang
+                    {t("admin.form.uploadFile")}
                   </Label>
                   {/* Hidden input */}
                   <input
@@ -711,14 +800,14 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                       <div className="text-center">
                         <ImageIcon className="w-8 h-8 mx-auto mb-2 text-green-500" />
                         <p className="font-medium text-gray-700">{imageFileName}</p>
-                        <p className="text-xs text-gray-500 mt-1">PNG, JPG, JPEG formatlarida</p>
+                        <p className="text-xs text-gray-500 mt-1">{t("admin.form.imageFormats")}</p>
                       </div>
                     </button>
                     {isUploadingImage && (
                       <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
                         <div className="text-center">
                           <Loader2 className="w-6 h-6 animate-spin text-green-500 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600 font-medium">Yuklanmoqda...</p>
+                          <p className="text-sm text-gray-600 font-medium">{t("admin.form.uploading")}</p>
                         </div>
                       </div>
                     )}
@@ -731,12 +820,12 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
                 <Cube className="w-5 h-5 text-primary" />
-                3D Model yuklash
+                {t("admin.form.modelUpload")}
               </h3>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="modelUrl" className="text-sm font-medium text-gray-700">
-                    3D Model URL manzili
+                    {t("admin.form.modelUrl")}
                   </Label>
                   <Input
                     id="modelUrl"
@@ -762,13 +851,13 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                     <div className="w-full border-t border-gray-300" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-3 bg-white text-gray-500">yoki</span>
+                    <span className="px-3 bg-white text-gray-500">{t("admin.form.or")}</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="modelFile" className="text-sm font-medium text-gray-700">
-                    Fayl yuklang (.glb, .gltf)
+                    {t("admin.form.uploadFile")} (.glb, .gltf)
                   </Label>
                   {/* Hidden input */}
                   <input
@@ -790,14 +879,14 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                       <div className="text-center">
                         <Cube className="w-8 h-8 mx-auto mb-2 text-primary" />
                         <p className="font-medium text-gray-700">{modelFileName}</p>
-                        <p className="text-xs text-gray-500 mt-1">GLB, GLTF formatlarida</p>
+                        <p className="text-xs text-gray-500 mt-1">{t("admin.form.modelFormats")}</p>
                       </div>
                     </button>
                     {isUploadingModel && (
                       <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
                         <div className="text-center">
                           <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
-                          <p className="text-sm text-gray-600 font-medium">Yuklanmoqda...</p>
+                          <p className="text-sm text-gray-600 font-medium">{t("admin.form.uploading")}</p>
                         </div>
                       </div>
                     )}
@@ -816,7 +905,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
             onClick={handleCancel}
             className="px-6 py-2 h-11 border-2 border-gray-300  hover:border-primary rounded-lg font-medium bg-transparent"
           >
-            Bekor qilish
+            {t("admin.form.cancel")}
           </Button>
           <Button
             type="submit"
@@ -826,12 +915,12 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Saqlanmoqda...
+                {t("admin.form.saving")}
               </>
             ) : (
               <>
                 <Upload className="mr-2 h-5 w-5" />
-                {item ? "Yangilash" : "Qo'shish"}
+                {item ? t("admin.form.update") : t("admin.form.add")}
               </>
             )}
           </Button>
@@ -852,7 +941,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
             </Button>
             <Image
               src={formData.imageUrl || "/placeholder.svg"}
-              alt="Taom rasmi"
+              alt={t("admin.form.image")}
               width={800}
               height={600}
               className="object-contain max-h-[80vh] rounded-lg shadow-2xl"

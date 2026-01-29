@@ -9,6 +9,8 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/hooks/use-language"
+import { getLocalizedName } from "@/lib/localization"
 
 interface BannerCarouselProps {
     banners: Banner[]
@@ -20,6 +22,7 @@ export function BannerCarousel({ banners, onBannerClick }: BannerCarouselProps) 
         Autoplay({ delay: 5000, stopOnInteraction: false }),
     ])
     const [selectedIndex, setSelectedIndex] = useState(0)
+    const { t, language } = useLanguage()
 
     const onSelect = useCallback(() => {
         if (!emblaApi) return
@@ -50,7 +53,7 @@ export function BannerCarousel({ banners, onBannerClick }: BannerCarouselProps) 
                             <div className="relative w-full h-[160px] md:h-[240px] cursor-pointer">
                                 <Image
                                     src={banner.imageUrl}
-                                    alt={banner.name}
+                                    alt={getLocalizedName(banner, language)}
                                     fill
                                     className="object-cover transition-transform duration-700 hover:scale-105"
                                     priority
@@ -59,11 +62,11 @@ export function BannerCarousel({ banners, onBannerClick }: BannerCarouselProps) 
 
                                 <div className="absolute bottom-4 left-4 right-4 text-white">
                                     <h3 className="text-xl md:text-3xl font-bold mb-1 drop-shadow-md line-clamp-1">
-                                        {banner.name}
+                                        {getLocalizedName(banner, language)}
                                     </h3>
                                     {banner.categoryId && (
                                         <div className="flex items-center gap-1 text-xs md:text-sm font-medium opacity-90">
-                                            <span>Kategoriyaga o'tish</span>
+                                            <span>{t("menu.gotoCategory")}</span>
                                             <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
                                         </div>
                                     )}

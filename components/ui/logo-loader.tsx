@@ -3,7 +3,10 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
+import { useLanguage } from "@/hooks/use-language";
+
 export function LogoLoader() {
+    const { t } = useLanguage();
     return (
         <motion.div
             className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background"
@@ -55,7 +58,7 @@ export function LogoLoader() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                Yuklanmoqda...
+                {t("common.loading")}
             </motion.p>
         </motion.div>
     );

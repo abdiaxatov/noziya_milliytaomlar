@@ -16,6 +16,7 @@ import {
 import { db } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
@@ -30,20 +31,26 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
-import { Edit, Plus, Trash2, X, Check, Loader2, GripVertical, ArrowUp, ArrowDown, Settings } from "lucide-react"
+import { Trash2, Edit, Plus, GripVertical, ArrowUp, ArrowDown, Settings, Save, X, Ban, Trash, Loader2, Check } from "lucide-react"
 import type { Category } from "@/types"
+import { getLocalizedName } from "@/lib/localization"
+import { useLanguage } from "@/hooks/use-language"
+
+interface CategoryManagementProps {
+}
 
 export function CategoryManagement() {
   const [categories, setCategories] = useState<Category[]>([])
-  const [newCategory, setNewCategory] = useState("")
+  const [newNames, setNewNames] = useState({ uz: "", ru: "", en: "" })
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
-  const [editedName, setEditedName] = useState("")
+  const [editedNames, setEditedNames] = useState({ uz: "", ru: "", en: "" })
   const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [draggedItem, setDraggedItem] = useState<Category | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const { toast } = useToast()
+  const { t, language } = useLanguage()
 
   useEffect(() => {
     // Simple query by name first, then we'll sort by order on client side
@@ -80,8 +87,8 @@ export function CategoryManagement() {
       (error) => {
         console.error("Error fetching categories:", error)
         toast({
-          title: "Xatolik",
-          description: "Kategoriyalarni yuklashda xatolik yuz berdi.",
+          title: t("common.error"),
+          description: t("admin.category.error"),
           variant: "destructive",
         })
         setIsLoading(false)
@@ -94,10 +101,12 @@ export function CategoryManagement() {
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!newCategory.trim()) {
+    const hasAnyName = newNames.uz.trim() || newNames.ru.trim() || newNames.en.trim()
+
+    if (!hasAnyName) {
       toast({
-        title: "Xatolik",
-        description: "Kategoriya nomi bo'sh bo'lishi mumkin emas",
+        title: t("common.error"),
+        description: t("admin.form.errors.fillRequired") || "Iltimos, kamida bitta tilni to'ldiring",
         variant: "destructive",
       })
       return
@@ -109,23 +118,27 @@ export function CategoryManagement() {
       const maxOrder = Math.max(...categories.map((cat) => cat.order || 0), 0)
 
       await addDoc(collection(db, "categories"), {
-        name: newCategory.trim(),
+        // Use first available name for legacy 'name' field
+        name: (newNames.uz || newNames.ru || newNames.en).trim(),
+        name_uz: newNames.uz.trim(),
+        name_ru: newNames.ru.trim(),
+        name_en: newNames.en.trim(),
         order: maxOrder + 1,
         active: true,
         createdAt: new Date(),
       })
 
       toast({
-        title: "Kategoriya qo'shildi",
-        description: `${newCategory} muvaffaqiyatli qo'shildi`,
+        title: t("admin.category.addSuccess") || "Kategoriya qo'shildi",
+        description: `${newNames.uz || newNames.ru || newNames.en} ${t("admin.category.addDesc") || "muvaffaqiyatli qo'shildi"}`,
       })
 
-      setNewCategory("")
+      setNewNames({ uz: "", ru: "", en: "" })
     } catch (error) {
       console.error("Error adding category:", error)
       toast({
-        title: "Xatolik",
-        description: "Kategoriyani qo'shishda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.category.addError") || "Kategoriyani qo'shishda xatolik yuz berdi",
         variant: "destructive",
       })
     } finally {
@@ -135,19 +148,25 @@ export function CategoryManagement() {
 
   const handleEditClick = (category: Category) => {
     setEditingCategory(category)
-    setEditedName(category.name)
+    setEditedNames({
+      uz: category.name_uz || category.name || "",
+      ru: category.name_ru || "",
+      en: category.name_en || "",
+    })
   }
 
   const handleCancelEdit = () => {
     setEditingCategory(null)
-    setEditedName("")
+    setEditedNames({ uz: "", ru: "", en: "" })
   }
 
   const handleSaveEdit = async (categoryId: string) => {
-    if (!editedName.trim()) {
+    const hasAnyName = editedNames.uz.trim() || editedNames.ru.trim() || editedNames.en.trim()
+
+    if (!hasAnyName) {
       toast({
-        title: "Xatolik",
-        description: "Kategoriya nomi bo'sh bo'lishi mumkin emas",
+        title: t("common.error"),
+        description: t("admin.form.errors.fillRequired") || "Iltimos, kamida bitta tilni to'ldiring",
         variant: "destructive",
       })
       return
@@ -157,22 +176,26 @@ export function CategoryManagement() {
 
     try {
       await updateDoc(doc(db, "categories", categoryId), {
-        name: editedName.trim(),
+        // Update legacy 'name' field with first available name
+        name: (editedNames.uz || editedNames.ru || editedNames.en).trim(),
+        name_uz: editedNames.uz.trim(),
+        name_ru: editedNames.ru.trim(),
+        name_en: editedNames.en.trim(),
         updatedAt: new Date(),
       })
 
       toast({
-        title: "Kategoriya yangilandi",
-        description: "Kategoriya muvaffaqiyatli yangilandi",
+        title: t("admin.category.updateSuccess") || "Kategoriya yangilandi",
+        description: t("admin.category.updateDesc") || "Kategoriya muvaffaqiyatli yangilandi",
       })
 
       setEditingCategory(null)
-      setEditedName("")
+      setEditedNames({ uz: "", ru: "", en: "" })
     } catch (error) {
       console.error("Error updating category:", error)
       toast({
-        title: "Xatolik",
-        description: "Kategoriyani yangilashda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.category.updateError") || "Kategoriyani yangilashda xatolik yuz berdi",
         variant: "destructive",
       })
     } finally {
@@ -190,14 +213,14 @@ export function CategoryManagement() {
       })
 
       toast({
-        title: currentActive ? "Kategoriya o'chirildi" : "Kategoriya yoqildi",
-        description: `Kategoriya ${currentActive ? "nofaol" : "faol"} holatga o'tkazildi`,
+        title: currentActive ? (t("admin.category.deactivated") || "Kategoriya o'chirildi") : (t("admin.category.activated") || "Kategoriya yoqildi"),
+        description: (t("admin.category.statusChanged") || "Kategoriya holatga o'tkazildi").replace("{status}", currentActive ? (t("admin.category.inactive") || "nofaol") : (t("admin.category.active") || "faol")),
       })
     } catch (error) {
       console.error("Error toggling category:", error)
       toast({
-        title: "Xatolik",
-        description: "Kategoriya holatini o'zgartirishda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.category.statusError") || "Kategoriya holatini o'zgartirishda xatolik yuz berdi",
         variant: "destructive",
       })
     } finally {
@@ -218,14 +241,14 @@ export function CategoryManagement() {
       await deleteDoc(doc(db, "categories", deletingCategoryId))
 
       toast({
-        title: "Kategoriya o'chirildi",
-        description: "Kategoriya muvaffaqiyatli o'chirildi",
+        title: t("admin.category.deleted") || "Kategoriya o'chirildi",
+        description: t("admin.category.deleteSuccess") || "Kategoriya muvaffaqiyatli o'chirildi",
       })
     } catch (error) {
       console.error("Error deleting category:", error)
       toast({
-        title: "Xatolik",
-        description: "Kategoriyani o'chirishda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.category.deleteError") || "Kategoriyani o'chirishda xatolik yuz berdi",
         variant: "destructive",
       })
     } finally {
@@ -265,14 +288,14 @@ export function CategoryManagement() {
       await batch.commit()
 
       toast({
-        title: "Tartib o'zgartirildi",
-        description: "Kategoriya tartibi muvaffaqiyatli o'zgartirildi",
+        title: t("admin.category.reordered") || "Tartib o'zgartirildi",
+        description: t("admin.category.reorderSuccess") || "Kategoriya tartibi muvaffaqiyatli o'zgartirildi",
       })
     } catch (error) {
       console.error("Error reordering categories:", error)
       toast({
-        title: "Xatolik",
-        description: "Kategoriya tartibini o'zgartirishda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("admin.category.reorderError") || "Kategoriya tartibini o'zgartirishda xatolik yuz berdi",
         variant: "destructive",
       })
     } finally {
@@ -326,40 +349,62 @@ export function CategoryManagement() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Kategoriyalar boshqaruvi</h2>
+              <h2 className="text-2xl font-bold">{t("admin.category.title")}</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Kategoriyalarni tartibini o'zgartirish uchun sudrab olib boring
+                {t("admin.category.subtitle")}
               </p>
             </div>
             <div className="flex gap-2">
               <Badge variant="secondary" className="bg-green-100 text-green-800">
-                Faol: {activeCategories.length}
+                {t("admin.category.active")}: {activeCategories.length}
               </Badge>
               <Badge variant="secondary" className="bg-gray-100 text-gray-600">
-                Jami: {categories.length}
+                {t("admin.category.total")}: {categories.length}
               </Badge>
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-6 space-y-4">
-            <form onSubmit={handleAddCategory} className="flex gap-2">
-              <Input
-                placeholder="Yangi kategoriya nomi"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                className="flex-1"
-              />
-              <Button type="submit" disabled={isSubmitting || !newCategory.trim()}>
+            <form onSubmit={handleAddCategory} className="space-y-4">
+              <Tabs defaultValue="uz" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-2">
+                  <TabsTrigger value="uz">UZ</TabsTrigger>
+                  <TabsTrigger value="ru" className="flex gap-1">RU <span className="text-[10px] opacity-60 font-normal">{t("common.optional")}</span></TabsTrigger>
+                  <TabsTrigger value="en" className="flex gap-1">EN <span className="text-[10px] opacity-60 font-normal">{t("common.optional")}</span></TabsTrigger>
+                </TabsList>
+                <TabsContent value="uz" className="mt-0">
+                  <Input
+                    placeholder={t("admin.form.nameUz")}
+                    value={newNames.uz}
+                    onChange={(e) => setNewNames(prev => ({ ...prev, uz: e.target.value }))}
+                  />
+                </TabsContent>
+                <TabsContent value="ru" className="mt-0">
+                  <Input
+                    placeholder={t("admin.form.nameRu")}
+                    value={newNames.ru}
+                    onChange={(e) => setNewNames(prev => ({ ...prev, ru: e.target.value }))}
+                  />
+                </TabsContent>
+                <TabsContent value="en" className="mt-0">
+                  <Input
+                    placeholder={t("admin.form.nameEn")}
+                    value={newNames.en}
+                    onChange={(e) => setNewNames(prev => ({ ...prev, en: e.target.value }))}
+                  />
+                </TabsContent>
+              </Tabs>
+              <Button type="submit" disabled={isSubmitting || !newNames.uz.trim()} className="w-full">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Qo'shilmoqda...
+                    {t("admin.category.adding")}
                   </>
                 ) : (
                   <>
                     <Plus className="mr-2 h-4 w-4" />
-                    Qo'shish
+                    {t("admin.category.addBtn")}
                   </>
                 )}
               </Button>
@@ -376,19 +421,22 @@ export function CategoryManagement() {
                   try {
                     await addDoc(collection(db, "categories"), {
                       name: "Chegirmalar",
+                      name_uz: "Chegirmalar",
+                      name_ru: "Скидки",
+                      name_en: "Discounts",
                       order: 0, // First position
                       active: true,
                       isDiscountCategory: true,
                       createdAt: new Date(),
                     })
                     toast({
-                      title: "Chegirmalar kategoriyasi qo'shildi",
-                      description: "Endi chegirmali mahsulotlar avtomatik ko'rinadi",
+                      title: t("admin.category.discountAdded") || "Chegirmalar kategoriyasi qo'shildi",
+                      description: t("admin.category.discountDesc") || "Endi chegirmali mahsulotlar avtomatik ko'rinadi",
                     })
                   } catch (error) {
                     toast({
-                      title: "Xatolik",
-                      description: "Kategoriyani qo'shishda xatolik",
+                      title: t("common.error"),
+                      description: t("admin.category.addError") || "Kategoriyani qo'shishda xatolik",
                       variant: "destructive",
                     })
                   } finally {
@@ -397,7 +445,13 @@ export function CategoryManagement() {
                 }}
                 disabled={isSubmitting}
               >
-                🔥 Chegirmalar kategoriyasini qo'shish
+                <div className="flex items-center justify-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                  🔥 {t("admin.category.addDiscountBtn") || "Chegirmalar kategoriyasini qo'shish"}
+                </div>
               </Button>
             )}
           </div>
@@ -409,15 +463,15 @@ export function CategoryManagement() {
           ) : categories.length === 0 ? (
             <div className="rounded-lg border border-dashed p-8 text-center">
               <Settings className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium text-muted-foreground mb-2">Hech qanday kategoriya topilmadi</p>
-              <p className="text-sm text-muted-foreground">Birinchi kategoriyangizni qo'shing</p>
+              <p className="text-lg font-medium text-muted-foreground mb-2">{t("admin.category.empty")}</p>
+              <p className="text-sm text-muted-foreground">{t("admin.category.addFirst")}</p>
             </div>
           ) : (
             <div className="space-y-4">
               {/* Active Categories */}
               <div>
                 <h3 className="text-lg font-semibold mb-3 text-green-700 flex items-center gap-2">
-                  <span>✅ Faol kategoriyalar</span>
+                  <span>✅ {t("admin.category.activeCats")}</span>
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                     {activeCategories.length}
                   </Badge>
@@ -440,17 +494,37 @@ export function CategoryManagement() {
                         }`}
                     >
                       {editingCategory?.id === category.id ? (
-                        <div className="flex flex-col sm:flex-row w-full items-start sm:items-center gap-2 sm:gap-3">
-                          <div className="flex items-center w-full sm:w-auto gap-2">
-                            <GripVertical className="h-5 w-5 text-gray-400 hidden sm:block" />
-                            <Input
-                              value={editedName}
-                              onChange={(e) => setEditedName(e.target.value)}
-                              className="flex-1"
-                              autoFocus
-                            />
-                          </div>
-                          <div className="flex gap-2 w-full sm:w-auto justify-end">
+                        <div className="flex flex-col w-full gap-3">
+                          <Tabs defaultValue="uz" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3 mb-2">
+                              <TabsTrigger value="uz">UZ</TabsTrigger>
+                              <TabsTrigger value="ru">RU</TabsTrigger>
+                              <TabsTrigger value="en">EN</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="uz" className="mt-0">
+                              <Input
+                                value={editedNames.uz}
+                                onChange={(e) => setEditedNames(prev => ({ ...prev, uz: e.target.value }))}
+                                placeholder={t("admin.form.nameUz")}
+                                autoFocus
+                              />
+                            </TabsContent>
+                            <TabsContent value="ru" className="mt-0">
+                              <Input
+                                value={editedNames.ru}
+                                onChange={(e) => setEditedNames(prev => ({ ...prev, ru: e.target.value }))}
+                                placeholder={t("admin.form.nameRu")}
+                              />
+                            </TabsContent>
+                            <TabsContent value="en" className="mt-0">
+                              <Input
+                                value={editedNames.en}
+                                onChange={(e) => setEditedNames(prev => ({ ...prev, en: e.target.value }))}
+                                placeholder={t("admin.form.nameEn")}
+                              />
+                            </TabsContent>
+                          </Tabs>
+                          <div className="flex gap-2 w-full justify-end">
                             <Button
                               size="sm"
                               variant="ghost"
@@ -477,14 +551,16 @@ export function CategoryManagement() {
                               <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 font-mono text-xs">
                                 #{(category.order || index + 1).toString().padStart(2, "0")}
                               </Badge>
-                              <span className="font-semibold text-gray-800 text-base sm:text-lg break-all">{category.name}</span>
+                              <span className="font-semibold text-gray-800 text-base sm:text-lg break-all">
+                                {getLocalizedName(category, language)}
+                              </span>
                               {category.isDiscountCategory ? (
                                 <Badge variant="secondary" className="bg-red-100 text-red-700 border-red-200 text-[10px] sm:text-xs">
-                                  🔥 Chegirmalar
+                                  🔥 {t("admin.form.discounts") || "Chegirmalar"}
                                 </Badge>
                               ) : (
                                 <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 text-[10px] sm:text-xs">
-                                  Faol
+                                  {t("admin.category.active") || "Faol"}
                                 </Badge>
                               )}
                             </div>
@@ -498,7 +574,7 @@ export function CategoryManagement() {
                                 onClick={() => moveCategory(category.id, "up")}
                                 disabled={isSubmitting || index === 0}
                                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 h-8 w-8 p-0"
-                                title="Yuqoriga ko'chirish"
+                                title={t("admin.category.moveUp") || "Yuqoriga ko'chirish"}
                               >
                                 <ArrowUp className="h-4 w-4" />
                               </Button>
@@ -508,7 +584,7 @@ export function CategoryManagement() {
                                 onClick={() => moveCategory(category.id, "down")}
                                 disabled={isSubmitting || index === activeCategories.length - 1}
                                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 h-8 w-8 p-0"
-                                title="Pastga ko'chirish"
+                                title={t("admin.category.moveDown") || "Pastga ko'chirish"}
                               >
                                 <ArrowDown className="h-4 w-4" />
                               </Button>
@@ -527,7 +603,7 @@ export function CategoryManagement() {
                                 onClick={() => handleEditClick(category)}
                                 disabled={isSubmitting}
                                 className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 h-8 w-8 p-0"
-                                title="Tahrirlash"
+                                title={t("admin.menu.item.edit")}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -538,7 +614,7 @@ export function CategoryManagement() {
                                   className="text-red-600 hover:text-red-700 hover:bg-red-100 h-8 w-8 p-0"
                                   onClick={() => handleDeleteClick(category.id)}
                                   disabled={isSubmitting}
-                                  title="O'chirish"
+                                  title={t("admin.menu.item.delete")}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -556,7 +632,7 @@ export function CategoryManagement() {
               {inactiveCategories.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-gray-600 flex items-center gap-2">
-                    <span>❌ Nofaol kategoriyalar</span>
+                    <span>❌ {t("admin.category.inactiveCats")}</span>
                     <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
                       {inactiveCategories.length}
                     </Badge>
@@ -569,9 +645,9 @@ export function CategoryManagement() {
                       >
                         <div className="flex items-center gap-3">
                           <GripVertical className="h-5 w-5 text-gray-300" />
-                          <span className="font-semibold text-gray-600 text-lg line-through">{category.name}</span>
+                          <span className="font-semibold text-gray-600 text-lg line-through">{getLocalizedName(category, language)}</span>
                           <Badge variant="secondary" className="bg-gray-200 text-gray-600 border-gray-300">
-                            ❌ Nofaol
+                            ❌ {t("admin.category.inactive")}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-1">
@@ -614,13 +690,13 @@ export function CategoryManagement() {
       <AlertDialog open={!!deletingCategoryId} onOpenChange={(open) => !open && setDeletingCategoryId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Kategoriyani o'chirishni tasdiqlaysizmi?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.category.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu amal qaytarib bo'lmaydi. Bu kategoriyaga tegishli taomlar kategoriyasiz qolishi mumkin.
+              {t("admin.category.deleteDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSubmitting}>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel disabled={isSubmitting}>{t("admin.form.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteCategory}
               disabled={isSubmitting}
@@ -629,10 +705,10 @@ export function CategoryManagement() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  O'chirilmoqda...
+                  {t("admin.category.deleting") || "O'chirilmoqda..."}
                 </>
               ) : (
-                "O'chirish"
+                t("admin.menu.item.delete")
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

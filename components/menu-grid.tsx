@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { MenuItemComponent } from "@/components/menu-item";
 import { ProductDetailDrawer } from "@/components/product-detail-drawer";
 import { BannerCarousel } from "@/components/banner-carousel";
+import { useLanguage } from "@/hooks/use-language";
 import type { MenuItem, Banner } from "@/types";
 
 interface MenuGridProps {
@@ -14,11 +15,12 @@ interface MenuGridProps {
 
 export const MenuGrid = React.memo(function MenuGrid({ items, banners, onBannerClick }: MenuGridProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const { t } = useLanguage();
 
   if (items.length === 0) {
     return (
       <div className="text-center py-8 ">
-        <p className="text-muted-foreground">Hech qanday taom topilmadi</p>
+        <p className="text-muted-foreground">{t("menu.noDishesFound")}</p>
       </div>
     );
   }

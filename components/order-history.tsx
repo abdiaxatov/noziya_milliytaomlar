@@ -12,12 +12,14 @@ import { formatCurrency } from "@/lib/utils"
 import { RefreshCw, Clock, CheckCircle, Truck, ChefHat } from "lucide-react"
 import type { Order } from "@/types"
 import { getDeviceId } from "@/lib/device-utils"
+import { useLanguage } from "@/hooks/use-language"
 
 export function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { toast } = useToast()
+  const { t, language } = useLanguage()
 
   const deviceId = getDeviceId()
 
@@ -99,15 +101,15 @@ export function OrderHistory() {
 
       if (showRefreshToast) {
         toast({
-          title: "Yangilandi",
-          description: `${sortedOrders.length} ta buyurtma topildi`,
+          title: t("orders.updated"),
+          description: `${sortedOrders.length} ${t("orders.foundOrders")}`,
         })
       }
     } catch (error) {
       console.error("Error fetching orders:", error)
       toast({
-        title: "Xatolik",
-        description: "Buyurtmalarni yuklashda xatolik yuz berdi",
+        title: t("common.error"),
+        description: t("orders.errorLoading"),
         variant: "destructive",
       })
     } finally {
@@ -144,19 +146,19 @@ export function OrderHistory() {
   const getStatusText = (status: string) => {
     switch (status) {
       case "pending":
-        return "Kutilmoqda"
+        return t("orders.status.pending")
       case "confirmed":
-        return "Tasdiqlandi"
+        return t("orders.status.confirmed")
       case "preparing":
-        return "Tayyorlanmoqda"
+        return t("orders.status.preparing")
       case "ready":
-        return "Tayyor"
+        return t("orders.status.ready")
       case "delivered":
-        return "Yetkazildi"
+        return t("orders.status.delivered")
       case "paid":
-        return "To'landi"
+        return t("orders.status.paid")
       case "cancelled":
-        return "Bekor qilindi"
+        return t("orders.status.cancelled")
       default:
         return status
     }
@@ -193,10 +195,10 @@ export function OrderHistory() {
       } else if (createdAt) {
         date = new Date(createdAt)
       } else {
-        return "Noma'lum sana"
+        return t("orders.unknownDate")
       }
 
-      return date.toLocaleDateString("uz-UZ", {
+      return date.toLocaleDateString(language === "uz" ? "uz-UZ" : language === "ru" ? "ru-RU" : "en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -205,7 +207,7 @@ export function OrderHistory() {
       })
     } catch (error) {
       console.error("Error formatting date:", error)
-      return "Noma'lum sana"
+      return t("orders.unknownDate")
     }
   }
 
@@ -234,11 +236,11 @@ export function OrderHistory() {
         <div className="mb-4">
           <Clock className="h-12 w-12 mx-auto text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">Buyurtmalar topilmadi</h3>
-        <p className="text-muted-foreground mb-4">Siz hali hech qanday buyurtma bermagansiz</p>
+        <h3 className="text-lg font-semibold mb-2">{t("orders.noOrders")}</h3>
+        <p className="text-muted-foreground mb-4">{t("orders.noOrdersDesc")}</p>
         <Button onClick={handleRefresh} variant="outline" disabled={isRefreshing}>
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-          Yangilash
+          {t("common.updated")}
         </Button>
       </div>
     )
@@ -247,10 +249,10 @@ export function OrderHistory() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Buyurtmalarim ({orders.length})</h2>
+        <h2 className="text-lg font-semibold">{t("orders.title")} ({orders.length})</h2>
         <Button onClick={handleRefresh} variant="outline" size="sm" disabled={isRefreshing}>
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-          Yangilash
+          {t("common.updated")}
         </Button>
       </div>
 
@@ -258,14 +260,14 @@ export function OrderHistory() {
         <Card key={order.id}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Buyurtma #{order.receiptNumber || order.id.slice(-6)}</CardTitle>
+              <CardTitle className="text-base">{t("orders.orderNo")}{order.receiptNumber || order.id.slice(-6)}</CardTitle>
               <Badge variant={getStatusVariant(order.status)} className="flex items-center gap-1">
                 {getStatusIcon(order.status)}
                 {getStatusText(order.status)}
               </Badge>
             </div>
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>Stol: {order.tableNumber}</span>
+              <span>{t("menu.table")}: {order.tableNumber}</span>
               <span>{formatOrderDate(order.createdAt)}</span>
             </div>
           </CardHeader>
@@ -276,16 +278,16 @@ export function OrderHistory() {
                   <span>
                     {item.quantity}x {item.name}
                   </span>
-                  <span>{formatCurrency(item.price * item.quantity)}</span>
+                  <span>{formatCurrency(item.price * item.quantity, language)}</span>
                 </div>
               ))}
               <div className="border-t pt-2 flex justify-between font-semibold">
-                <span>Jami:</span>
-                <span>{formatCurrency(order.total)}</span>
+                <span>{t("orders.total")}:</span>
+                <span>{formatCurrency(order.total, language)}</span>
               </div>
               {order.notes && (
                 <div className="text-sm text-muted-foreground">
-                  <strong>Izoh:</strong> {order.notes}
+                  <strong>{t("orders.notes")}:</strong> {order.notes}
                 </div>
               )}
             </div>

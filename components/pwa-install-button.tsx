@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { useLanguage } from "@/hooks/use-language";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -16,12 +17,12 @@ interface BeforeInstallPromptEvent extends Event {
 interface PWAInstallButtonProps {
   className?: string;
   variant?:
-    | "default"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link"
-    | "destructive";
+  | "default"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link"
+  | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
 }
 
@@ -74,6 +75,8 @@ export default function PWAInstallButton({
     };
   }, [deferredPrompt, isInstalled]);
 
+  const { t } = useLanguage();
+
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
@@ -81,8 +84,10 @@ export default function PWAInstallButton({
     const { outcome } = await deferredPrompt.userChoice;
 
     if (outcome === "accepted") {
-      console.log("User accepted the install");
+      console.log(t("pwa.status.accepted"));
       setIsInstalled(true);
+    } else {
+      console.log(t("pwa.status.dismissed"));
     }
 
     setDeferredPrompt(null);
@@ -101,7 +106,7 @@ export default function PWAInstallButton({
       className={className}
     >
       <Download className="w-4 h-4 mr-2" />
-      Ilovani o'rnatish
+      {t("pwa.installBtn")}
     </Button>
   );
 }

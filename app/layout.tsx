@@ -10,6 +10,7 @@ import CustomScroll from "@/components/custom-scroll";
 import SmoothScroll from "@/components/smooth-scroll";
 import PWAInstallPrompt from "@/components/pwa-install";
 import AnalyticsTracker from "@/components/analytics-tracker";
+import { LanguageProvider } from "@/hooks/use-language";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -72,18 +73,20 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
         >
-          <CartProvider>
-            <SmoothScroll>
-              <CustomScroll />
-              {children}
-              <Analytics />
-            </SmoothScroll>
-            <Suspense fallback={null}>
-              <AnalyticsTracker />
-            </Suspense>
-            <PWAInstallPrompt />
-            <Toaster />
-          </CartProvider>
+          <LanguageProvider>
+            <CartProvider>
+              <SmoothScroll>
+                <CustomScroll />
+                {children}
+                <Analytics />
+              </SmoothScroll>
+              <Suspense fallback={null}>
+                <AnalyticsTracker />
+              </Suspense>
+              <PWAInstallPrompt />
+              <Toaster />
+            </CartProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

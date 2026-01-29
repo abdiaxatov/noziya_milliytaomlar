@@ -23,6 +23,8 @@ import {
 import Image from "next/image";
 import { LogoLoader } from "@/components/ui/logo-loader";
 import { AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/hooks/use-language";
+import { getLocalizedName, getLocalizedDescription } from "@/lib/localization";
 
 import type { MenuItem, Category, Banner } from "@/types";
 
@@ -39,6 +41,7 @@ export function MenuPage() {
   // 🔹 Banner fallback uchun state
   const [bannerSrc, setBannerSrc] = useState("/Banner.png");
   const [tableInfo, setTableInfo] = useState<{ number: number | string; type: string } | null>(null);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const lastOrderInfoStr = localStorage.getItem("lastOrderInfo");
@@ -46,9 +49,9 @@ export function MenuPage() {
       try {
         const info = JSON.parse(lastOrderInfoStr);
         if (info.tableNumber) {
-          setTableInfo({ number: info.tableNumber, type: "Stol" });
+          setTableInfo({ number: info.tableNumber, type: t("menu.table") });
         } else if (info.roomNumber) {
-          setTableInfo({ number: info.roomNumber, type: "Xona" });
+          setTableInfo({ number: info.roomNumber, type: t("menu.room") });
         }
       } catch (e) {
         console.error("Error parsing lastOrderInfo", e);
@@ -159,8 +162,8 @@ export function MenuPage() {
     if (searchQuery) {
       filtered = filtered.filter(
         (item) =>
-          item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description?.toLowerCase().includes(searchQuery.toLowerCase())
+          getLocalizedName(item, language).toLowerCase().includes(searchQuery.toLowerCase()) ||
+          getLocalizedDescription(item, language).toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     if (selectedCategory) {
@@ -268,7 +271,7 @@ export function MenuPage() {
               Noziya
             </h1>
             <h3 className="text-lg md:text-2xl font-semibold tracking-wide uppercase drop-shadow-lg">
-              Milliy Taomlar
+              {t("menu.title")}
             </h3>
             {tableInfo && (
               <div className="mt-2 flex items-center gap-2">
@@ -329,11 +332,11 @@ export function MenuPage() {
       <Dialog open={callModalOpen} onOpenChange={setCallModalOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Хотите позвонить?</DialogTitle>
+            <DialogTitle>{t("menu.call.title")}</DialogTitle>
             <p className="text-sm text-gray-600 mt-2">
-              Менеджер: <span className="font-semibold">Санджар</span>
+              {t("menu.call.manager")}: <span className="font-semibold">Санджар</span>
               <br />
-              Телефон: <span className="font-semibold">+998 95 062 44 22</span>
+              {t("menu.call.phone")}: <span className="font-semibold">+998 95 062 44 22</span>
             </p>
           </DialogHeader>
           <DialogFooter className="flex gap-3">
@@ -341,14 +344,14 @@ export function MenuPage() {
               onClick={handleCall}
               className="bg-primary hover:bg-primary/90"
             >
-              Да
+              {t("menu.call.yes")}
             </Button>
             <Button
               onClick={() => setCallModalOpen(false)}
               variant="outline"
               className="bg-gray-100"
             >
-              Нет
+              {t("menu.call.no")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -402,7 +405,7 @@ export function MenuPage() {
               <a className="text-primary font-bold" href="http://abdiaxatov.uz">
                 Abdiaxatov
               </a>{" "}
-              IT услуги
+              {t("menu.itServices")}
             </p>
           </div>
         </footer>
@@ -442,14 +445,15 @@ function NoItems({
   hasItems: boolean;
   resetSearch: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="text-center py-8">
       <p className="text-muted-foreground">
-        {hasItems ? "Ничего не найдено по запросу" : "Нет доступных блюд"}
+        {hasItems ? t("menu.noItems") : t("menu.noAvailable")}
       </p>
       {hasItems && (
-        <Button variant="outline" onClick={resetSearch} className="mt-2">
-          Qidiruvni tozalash
+        <Button variant="outline" onClick={resetSearch} className="mt-2 text-xs">
+          {t("menu.clearSearch")}
         </Button>
       )}
     </div>

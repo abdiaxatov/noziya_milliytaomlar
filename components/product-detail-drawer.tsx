@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Loader2, Minus, Plus, RotateCcw, Edit, Trash2 } from "lucide-react";
 import { PriceDisplay } from "@/components/price-display";
 import { DiscountTimer } from "@/components/discount-timer";
+import { useLanguage } from "@/hooks/use-language";
+import { getLocalizedName, getLocalizedDescription } from "@/lib/localization";
 import {
     Drawer,
     DrawerContent,
@@ -38,6 +40,7 @@ export function ProductDetailDrawer({
     onEdit,
     onDelete,
 }: ProductDetailDrawerProps) {
+    const { t, language } = useLanguage();
     // ... setup ...
 
     // ... render ...
@@ -174,7 +177,7 @@ export function ProductDetailDrawer({
     return (
         <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DrawerContent className="max-h-[96vh] h-full rounded-t-[30px] bg-primary/10 backdrop-blur-md border-0 flex flex-col overflow-hidden outline-none">
-                <DrawerTitle className="sr-only">{item.name}</DrawerTitle>
+                <DrawerTitle className="sr-only">{getLocalizedName(item, language)}</DrawerTitle>
 
                 {/* Close Button */}
                 <button
@@ -254,7 +257,7 @@ export function ProductDetailDrawer({
                         >
                             <Image
                                 src={optimizeImage(item.imageUrl, 1200)}
-                                alt={item.name}
+                                alt={getLocalizedName(item, language)}
                                 fill
                                 className="object-contain pointer-events-none select-none"
                                 sizes="100vw"
@@ -309,18 +312,18 @@ export function ProductDetailDrawer({
                         <div className="space-y-4 pointer-events-auto">
                             <div>
                                 <h2 className="text-3xl font-black text-white mb-2 leading-tight tracking-tight drop-shadow-2xl">
-                                    {item.name}
+                                    {getLocalizedName(item, language)}
                                 </h2>
                                 <p className="text-gray-300 text-sm leading-relaxed line-clamp-3 font-medium text-shadow-sm">
-                                    {item.description}
+                                    {getLocalizedDescription(item, language)}
                                 </p>
                             </div>
 
                             <div className="w-full pt-2">
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Narxi</span>
+                                    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{t("menu.price")}</span>
                                     {item?.discountEndsAt && new Date(item.discountEndsAt) > new Date() && (
-                                        <span className="text-xs text-red-500/80 font-bold uppercase tracking-wider">Chegirma tugash muddati</span>
+                                        <span className="text-xs text-red-500/80 font-bold uppercase tracking-wider">{t("menu.discountEnds")}</span>
                                     )}
                                 </div>
                                 <div className="flex items-center justify-between w-full">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { useLanguage } from "@/hooks/use-language";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -18,6 +19,7 @@ export default function PWAInstallPrompt() {
     useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -35,8 +37,8 @@ export default function PWAInstallPrompt() {
       setDeferredPrompt(null);
       // Optionally show a success message
       toast({
-        title: "Ilova o'rnatildi!",
-        description: "Noziya Milliy Taomlar endi sizning qurilmangizda.",
+        title: t("pwa.installSuccess"),
+        description: t("pwa.installSuccessDesc"),
       });
     };
 
@@ -50,16 +52,16 @@ export default function PWAInstallPrompt() {
       );
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
-  }, [toast]);
+  }, [toast, t]);
 
   useEffect(() => {
     if (showPrompt && deferredPrompt) {
       toast({
-        title: "Ilovani o'rnating",
-        description: "Qulayroq foydalanish uchun ilovani o'rnating",
+        title: t("pwa.installToastTitle"),
+        description: t("pwa.installToastDesc"),
         action: (
           <ToastAction
-            altText="O'rnatish"
+            altText={t("pwa.installToastAction")}
             onClick={async () => {
               if (deferredPrompt) {
                 deferredPrompt.prompt();
@@ -74,13 +76,13 @@ export default function PWAInstallPrompt() {
               }
             }}
           >
-            O'rnatish
+            {t("pwa.installToastAction")}
           </ToastAction>
         ),
         duration: Infinity, // Do not auto-dismiss
       });
     }
-  }, [showPrompt, deferredPrompt, toast]);
+  }, [showPrompt, deferredPrompt, toast, t]);
 
   return null;
 }
