@@ -111,7 +111,13 @@ export function MenuPage() {
             return {
               id: doc.id,
               name: data.name || "",
+              name_uz: data.name_uz || "",
+              name_ru: data.name_ru || "",
+              name_en: data.name_en || "",
               description: data.description || "",
+              description_uz: data.description_uz || "",
+              description_ru: data.description_ru || "",
+              description_en: data.description_en || "",
               price: data.price || 0,
               discountPrice: data.discountPrice || null,
               discountEndsAt: data.discountEndsAt || null,
@@ -181,7 +187,7 @@ export function MenuPage() {
       }
     }
     return filtered;
-  }, [searchQuery, selectedCategory, menuItems, categories]);
+  }, [searchQuery, selectedCategory, menuItems, categories, language]);
 
   // 🔹 Check for active discounts
   const hasActiveDiscounts = useMemo(() => {
@@ -334,7 +340,7 @@ export function MenuPage() {
           <DialogHeader>
             <DialogTitle>{t("menu.call.title")}</DialogTitle>
             <p className="text-sm text-gray-600 mt-2">
-              {t("menu.call.manager")}: <span className="font-semibold">Санджар</span>
+              {t("menu.call.manager")}: <span className="font-semibold">Anvarjon</span>
               <br />
               {t("menu.call.phone")}: <span className="font-semibold">+998 95 062 44 22</span>
             </p>

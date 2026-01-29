@@ -148,8 +148,10 @@ export function CategoryManagement() {
 
   const handleEditClick = (category: Category) => {
     setEditingCategory(category)
+    // Only fallback to 'name' if no language-specific names exist (legacy data)
+    const isLegacy = !category.name_uz && !category.name_ru && !category.name_en
     setEditedNames({
-      uz: category.name_uz || category.name || "",
+      uz: category.name_uz || (isLegacy ? category.name : "") || "",
       ru: category.name_ru || "",
       en: category.name_en || "",
     })
