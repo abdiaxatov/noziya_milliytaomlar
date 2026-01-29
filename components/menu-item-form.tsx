@@ -62,7 +62,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
   const [modelUrlError, setModelUrlError] = useState<string | null>(null)
 
   const { toast } = useToast()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   const [imageFileName, setImageFileName] = useState(t("admin.form.fileNotSelected"))
   const [modelFileName, setModelFileName] = useState(t("admin.form.fileNotSelected"))

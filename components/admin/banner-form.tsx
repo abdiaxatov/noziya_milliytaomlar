@@ -42,7 +42,7 @@ export function BannerForm({ banner, categories, onSuccess, onCancel }: BannerFo
     const [showImagePreview, setShowImagePreview] = useState(false)
 
     const { toast } = useToast()
-    const { t } = useLanguage()
+    const { t, language } = useLanguage()
     const imageInputRef = useRef<HTMLInputElement>(null)
 
     const [imageFileName, setImageFileName] = useState(t("admin.form.fileNotSelected"))
