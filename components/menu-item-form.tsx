@@ -463,7 +463,7 @@ export function MenuItemForm({ item, categories, onSuccess, onCancel }: MenuItem
                 {t("admin.form.basicInfo")}
               </h3>
               <div className="space-y-4">
-                <Tabs defaultValue="uz" className="w-full">
+                <Tabs defaultValue={language} className="w-full">
                   <TabsList className="grid w-full grid-cols-3 mb-4">
                     <TabsTrigger value="uz">O'zbekcha</TabsTrigger>
                     <TabsTrigger value="ru" className="flex gap-1">Русский <span className="text-[10px] opacity-60 font-normal lowercase">{t("common.optional")}</span></TabsTrigger>

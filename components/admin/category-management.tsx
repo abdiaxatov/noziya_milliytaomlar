@@ -64,12 +64,7 @@ export function CategoryManagement() {
           const data = doc.data()
           categoriesData.push({
             id: doc.id,
-            name: data.name,
-            order: data.order || 0,
-            active: data.active !== false,
-            isDiscountCategory: data.isDiscountCategory || false,
-            createdAt: data.createdAt,
-            updatedAt: data.updatedAt,
+            ...data,
           } as Category)
         })
 
@@ -369,7 +364,7 @@ export function CategoryManagement() {
         <CardContent>
           <div className="mb-6 space-y-4">
             <form onSubmit={handleAddCategory} className="space-y-4">
-              <Tabs defaultValue="uz" className="w-full">
+              <Tabs defaultValue={language} className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-2">
                   <TabsTrigger value="uz">UZ</TabsTrigger>
                   <TabsTrigger value="ru" className="flex gap-1">RU <span className="text-[10px] opacity-60 font-normal">{t("common.optional")}</span></TabsTrigger>
@@ -497,7 +492,7 @@ export function CategoryManagement() {
                     >
                       {editingCategory?.id === category.id ? (
                         <div className="flex flex-col w-full gap-3">
-                          <Tabs defaultValue="uz" className="w-full">
+                          <Tabs defaultValue={language} className="w-full">
                             <TabsList className="grid w-full grid-cols-3 mb-2">
                               <TabsTrigger value="uz">UZ</TabsTrigger>
                               <TabsTrigger value="ru">RU</TabsTrigger>
