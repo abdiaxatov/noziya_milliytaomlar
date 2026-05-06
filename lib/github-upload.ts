@@ -37,8 +37,15 @@ export async function uploadToGitHub(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return { success: false, error: errorData.error || "Upload failed" };
+      try {
+        const errorData = await response.json();
+        return { success: false, error: errorData.error || "Upload failed" };
+      } catch {
+        return {
+          success: false,
+          error: `Upload failed: ${response.status} ${response.statusText}`,
+        };
+      }
     }
 
     const data = await response.json();

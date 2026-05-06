@@ -21,6 +21,11 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  api: {
+    bodyParser: {
+      sizeLimit: "50mb",
+    },
+  },
   images: {
     unoptimized: true,
     remotePatterns: [

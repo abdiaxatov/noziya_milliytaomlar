@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
-interface UploadBody {
-  base64Content: string;
-  fileName: string;
-  folder?: string;
-}
+export const config = {
+  maxDuration: 300,
+};
 
 export async function POST(request: NextRequest) {
   try {
-    const body: UploadBody = await request.json();
+    const body = (await request.json()) as {
+      base64Content: string;
+      fileName: string;
+      folder?: string;
+    };
     const { base64Content, fileName, folder = "models" } = body;
 
     const token = process.env.GITHUB_TOKEN;
