@@ -7,11 +7,26 @@ export const config = {
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
-      base64Content: string;
+      chunks?: string[];
+      base64Content?: string;
       fileName: string;
       folder?: string;
+      totalChunks?: number;
     };
-    const { base64Content, fileName, folder = "models" } = body;
+
+    let { base64Content, fileName, folder = "models" } = body;
+
+    // Combine chunks if sent separately
+    if (body.chunks && body.chunks.length > 0) {
+      base64Content = body.chunks.join("");
+    }
+
+    if (!base64Content) {
+      return NextResponse.json(
+        { success: false, error: "No content provided" },
+        { status: 400 },
+      );
+    }
 
     const token = process.env.GITHUB_TOKEN;
     const owner = process.env.GITHUB_OWNER || "abdiaxatov";

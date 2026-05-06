@@ -1,7 +1,33 @@
+import imageCompression from "browser-image-compression";
+
 interface UploadResult {
   success: boolean;
   url?: string;
   error?: string;
+}
+
+async function compressImage(file: File): Promise<File> {
+  // If file is small enough, don't compress
+  if (file.size < 2 * 1024 * 1024) {
+    return file;
+  }
+
+  const options = {
+    maxSizeMB: 2.5,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+  };
+
+  try {
+    const compressedFile = await imageCompression(file, options);
+    console.log(
+      `Image compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`,
+    );
+    return compressedFile;
+  } catch (error) {
+    console.error("Compression failed, using original:", error);
+    return file;
+  }
 }
 
 export async function uploadToGitHub(
@@ -10,6 +36,11 @@ export async function uploadToGitHub(
   folder = "models",
 ): Promise<UploadResult> {
   try {
+    // Compress image if it's too large
+    const processedFile = file.type.startsWith("image/")
+      ? await compressImage(file)
+      : file;
+
     // Use FileReader to avoid stack overflow
     const base64Content = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -20,19 +51,28 @@ export async function uploadToGitHub(
         resolve(base64);
       };
       reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processedFile);
     });
 
-    // Call server-side API route
+    // Chunk size: 3MB (Vercel limit is 4.5MB, leaving 1.5MB for metadata)
+    const CHUNK_SIZE = 3 * 1024 * 1024;
+    const chunks: string[] = [];
+
+    for (let i = 0; i < base64Content.length; i += CHUNK_SIZE) {
+      chunks.push(base64Content.substring(i, i + CHUNK_SIZE));
+    }
+
+    // Call server-side API route with chunks
     const response = await fetch("/api/upload-github", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        base64Content,
+        chunks,
         fileName,
         folder,
+        totalChunks: chunks.length,
       }),
     });
 
